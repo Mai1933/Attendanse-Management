@@ -55,7 +55,7 @@ mailhog:http://localhost:8025/
 
 ・拡張機能で ChatGPT のサイドバーをオンにしている場合、画面下部のボタンが押せない事象が発生することがあります。一時的に拡張機能をアンインストールすると解消します。
 
-・画像は src/storage/app/public/及び src/storage/app/public/user_image/に保存しています。。
+・画像は src/storage/app/public/及び src/storage/app/public/user_image/に保存しています。  
 
 ・テストに関して、RegisterTest,LoginTest,ProductTest の 3 つのファイルに記述しています。  
 //【項目】  
