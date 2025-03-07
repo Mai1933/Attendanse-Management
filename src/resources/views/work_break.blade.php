@@ -1,0 +1,25 @@
+@extends('headers/header_general')
+
+@section('css')
+    <link rel="stylesheet" href="{{ asset('css/works.css') }}">
+@endsection
+
+@section('content')
+    <div class="works">
+        <div class="works_inner">
+            <form action="" class="works_form">
+                @csrf
+                <div class="works_status">
+                    <p class="works_status-content">休憩中</p>
+                </div>
+                <p class="works_date">2023年6月1日(木)</p>
+                <div class="works_time">
+                    <p class="works_time-content">08:00</p>
+                </div>
+                <div class="works_buttons">
+                    <button type="submit" class="works_buttons-break">休憩戻</button>
+                </div>
+            </form>
+        </div>
+    </div>
+@endsection

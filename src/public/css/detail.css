@@ -5,7 +5,7 @@
 .attendance_content {
     background: #F0EFF2;
     width: 100%;
-    height: 110vh;
+    height: 120%;
     padding-top: 170px;
     display: flex;
     justify-content: center;
@@ -117,6 +117,11 @@
     aspect-ratio: 4.5/1;
     border: 1px solid #E1E1E1;
     border-radius: 10px;
+    color: #000;
+    font-size: 16px;
+    font-weight: 700;
+    padding-left: 18px;
+    padding-top: 5px;
 }
 
 .information_button {

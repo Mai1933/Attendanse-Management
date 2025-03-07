@@ -5,84 +5,61 @@
 @endsection
 
 @section('content')
-    <div class="attendance_content">
-        <div class="attendance_inner">
+    <div class="application">
+        <div class="application_inner">
             <div class="ttl">
-                <h2 class="ttl_content">修正申請詳細</h2>
+                <h2 class="ttl_content">申請一覧</h2>
             </div>
-            <form class="information">
-                @csrf
-                <div class="information_row-first">
-                    <div class="row_ttl">
-                        <p class="row_ttl-content">名前</p>
-                    </div>
-                    <div class="row_content">
-                        <div class="row_content-inner-name">
-                            <p class="row_content-name">西　伶奈</p>
+            <div class="content">
+                <input id="waiting" type="radio" name="tab_item" checked>
+                <label class="tab_item" for="waiting">承認待ち</label>
+                <input id="approved" type="radio" name="tab_item">
+                <label class="tab_item" for="approved">承認済み</label>
+                <div class="tab_content" id="waiting_content">
+                    <div class="waiting_content-table">
+                        <div class="content_headers">
+                            <p class="table_content-small">状態</p>
+                            <p class="table_content-small">名前</p>
+                            <p class="table_content">対象日時</p>
+                            <p class="table_content">申請理由</p>
+                            <p class="table_content">申請日時</p>
+                            <p class="table_content-small">詳細</p>
+                        </div>
+                        <div class="content_information">
+                            <p class="table_content-small">承認待ち</p>
+                            <p class="table_content-small">西玲奈</p>
+                            <p class="table_content">2023/06/01</p>
+                            <p class="table_content">遅延のため</p>
+                            <p class="table_content">2023/06/02</p>
+                            <p class="table_content-small">
+                                <a href="" class="detail_link">詳細</a>
+                            </p>
                         </div>
                     </div>
                 </div>
-                <div class="information_row">
-                    <div class="row_ttl">
-                        <p class="row_ttl-content">日付</p>
-                    </div>
-                    <div class="row_content">
-                        <div class="row_content-inner">
-                            <p type="text" class="row_content-input" value="2023年" name="year">
-                            <p type="text" class="row_content-input" value="6月1日" name="date">
+                <div class="tab_content" id="approved_content">
+                    <div class="approved_content-table">
+                        <div class="content_headers">
+                            <p class="table_content-small">状態</p>
+                            <p class="table_content-small">名前</p>
+                            <p class="table_content">対象日時</p>
+                            <p class="table_content">申請理由</p>
+                            <p class="table_content">申請日時</p>
+                            <p class="table_content-small">詳細</p>
+                        </div>
+                        <div class="content_information">
+                            <p class="table_content-small">承認済み</p>
+                            <p class="table_content-small">入間美兎</p>
+                            <p class="table_content">2023/06/01</p>
+                            <p class="table_content">遅延のため</p>
+                            <p class="table_content">2023/06/02</p>
+                            <p class="table_content-small">
+                                <a href="" class="detail_link">詳細</a>
+                            </p>
                         </div>
                     </div>
                 </div>
-                <div class="information_row">
-                    <div class="row_ttl">
-                        <p class="row_ttl-content">出勤・退勤</p>
-                    </div>
-                    <div class="row_content">
-                        <div class="row_content-inner">
-                            <p type="text" class="row_content-input" value="09:00" name="work_start">
-                            <p class="row_content-character">〜</p>
-                            <p type="text" class="row_content-input" value="20:00" name="work_end">
-                        </div>
-                    </div>
-                </div>
-                <div class="information_row">
-                    <div class="row_ttl">
-                        <p class="row_ttl-content">休憩</p>
-                    </div>
-                    <div class="row_content">
-                        <div class="row_content-inner">
-                            <p type="text" class="row_content-input" value="12:00" name="break_start">
-                            <p class="row_content-character">〜</p>
-                            <p type="text" class="row_content-input" value="13:00" name="break_end">
-                        </div>
-                    </div>
-                </div>
-                <div class="information_row">
-                    <div class="row_ttl">
-                        <p class="row_ttl-content">休憩2</p>
-                    </div>
-                    <div class="row_content">
-                        <div class="row_content-inner">
-                            <p type="text" class="row_content-input" name="break_start2">
-                            <p class="row_content-character">〜</p>
-                            <p type="text" class="row_content-input" name="break_end2">
-                        </div>
-                    </div>
-                </div>
-                <div class="information_row-last">
-                    <div class="row_ttl">
-                        <p class="row_ttl-content">備考</p>
-                    </div>
-                    <div class="row_content">
-                        <div class="row_content-inner">
-                            <textarea name="remarks" class="row_content-textarea"></textarea>
-                        </div>
-                    </div>
-                </div>
-                <div class="information_button">
-                    <button type="submit" class="button-submit">修正</button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 @endsection

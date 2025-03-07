@@ -31,9 +31,14 @@ class UserController extends Controller
         return view('admin_detail');
     }
 
-    public function applicationDetail()
+    public function adminApplicationsList()
     {
         return view('admin_applications');
+    }
+
+    public function applicationDetail()
+    {
+        return view('approve');
     }
 
     public function generalLogin()
@@ -49,5 +54,40 @@ class UserController extends Controller
     public function generalList()
     {
         return view('general_attendance');
+    }
+
+    public function generalWorkDetail()
+    {
+        return view('general_detail');
+    }
+
+    public function checkWait()
+    {
+        return view('general_detail-wait');
+    }
+
+    public function applicationsList()
+    {
+        return view('general_applications');
+    }
+
+    public function attendance()
+    {
+        return view('work_before');
+    }
+
+    public function attendance2()
+    {
+        return view('work_after');
+    }
+
+    public function attendance3()
+    {
+        return view('work_break');
+    }
+
+    public function attendance4()
+    {
+        return view('work_finish');
     }
 }
