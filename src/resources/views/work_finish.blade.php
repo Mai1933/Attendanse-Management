@@ -1,4 +1,4 @@
-@extends('headers/header_general')
+@extends('headers/header_general_finish')
 
 @section('css')
     <link rel="stylesheet" href="{{ asset('css/works.css') }}">

@@ -1,7 +1,7 @@
 @extends('headers/header_general')
 
 @section('css')
-    <link rel="stylesheet" href="{{ asset('css/works.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/works_before.css') }}">
 @endsection
 
 @section('content')
@@ -16,7 +16,7 @@
                 <div class="works_time">
                     <p class="works_time-content">08:00</p>
                 </div>
-                <button type="submit" class="works_buttons-button">出勤</button>
+                <button type="submit" class="works_buttons-work">出勤</button>
             </form>
         </div>
     </div>

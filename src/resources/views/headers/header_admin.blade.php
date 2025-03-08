@@ -28,9 +28,9 @@
         </div>
         <nav class="header_nav">
             <ul class="nav_links">
-                <li><a href="/attendance" class="links_content">勤怠一覧</a></li>
-                <li><a href="/attendance/list" class="links_content">スタッフ一覧</a></li>
-                <li><a href="/stamp_correction_request/list" class="links_content">申請一覧</a></li>
+                <li><a href="/admin/attendance/list" class="links_content">勤怠一覧</a></li>
+                <li><a href="/admin/staff/list" class="links_content">スタッフ一覧</a></li>
+                <li><a href="/admin/stamp_correction_request/list" class="links_content">申請一覧</a></li>
                 <form action="/logout" method="post">
                     @csrf
                     <li><button type="submit" class="links_content-button">ログアウト</button></li>

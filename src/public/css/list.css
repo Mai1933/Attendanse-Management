@@ -9,6 +9,7 @@
     padding-top: 170px;
     display: flex;
     justify-content: center;
+    height: clamp(1200px, 100vw, 1500px);
 }
 
 .attendance_inner {
