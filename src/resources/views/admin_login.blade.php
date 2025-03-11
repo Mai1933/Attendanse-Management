@@ -7,12 +7,12 @@
 @section('content')
     <div class="login_content">
         <div class="login_content-inner">
-            <form class="login_form" action="/login" method="post">
+            <form class="login_form" action="/admin/login" method="post">
                 @csrf
                 <h2 class="form_ttl">管理者ログイン</h2>
-                @error('login')
+                @error('adminLogin')
                     <span class="input_error-login">
-                        <p class="input_error_message">{{$errors->first('login')}}</p>
+                        <p class="input_error_message">{{$errors->first('adminLogin')}}</p>
                     </span>
                 @enderror
                 <div class="form_inputs">
@@ -32,7 +32,7 @@
                                 <p class="input_error_message">{{$errors->first('password')}}</p>
                             </span>
                         @enderror
-                        <input type="text" class="bunch_input" name="password">
+                        <input type="password" class="bunch_input" name="password">
                     </div>
                 </div>
                 <button type="submit" class="form_submit">管理者ログインする</button>

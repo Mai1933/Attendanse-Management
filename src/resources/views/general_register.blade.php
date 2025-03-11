@@ -41,7 +41,7 @@
                                 <p class="input_error_message">{{$errors->first('password')}}</p>
                             </span>
                         @enderror
-                        <input type="text" class="bunch_input" name="password">
+                        <input type="password" class="bunch_input" name="password">
                     </div>
                     <div class="input_bunch">
                         <span class="bunch_ttl">パスワード確認</span>
@@ -50,7 +50,7 @@
                                 <p class="input_error_message">{{$errors->first('password_confirmation')}}</p>
                             </span>
                         @enderror
-                        <input type="text" class="bunch_input" name="password_confirmation"
+                        <input type="password" class="bunch_input" name="password_confirmation"
                             value="{{ old('password_confirmation') }}">
                     </div>
                 </div>

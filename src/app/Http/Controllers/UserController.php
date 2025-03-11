@@ -2,7 +2,42 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\LoginRequest;
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Contracts\Auth\StatefulGuard;
+use Illuminate\Routing\Controller;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
+use Laravel\Fortify\Contracts\CreatesNewUsers;
+use Laravel\Fortify\Contracts\RegisterViewResponse;
+use Laravel\Fortify\Fortify;
+use App\Actions\Fortify\CreateNewUser;
+use App\Models\GeneralUser;
+use App\Models\AdminUser;
+use Illuminate\Support\Facades\Log;
+use App\Http\Requests\ExhibitionRequest;
+use App\Models\Comment;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Item;
+use App\Models\Category;
+use App\Models\User;
+use App\Models\Purchase;
+use App\Http\Requests\AddressRequest;
+use App\Http\Requests\ProfileRequest;
+use Laravel\Fortify\Contracts\LoginResponse;
+use App\Responses\AdminLoginResponse;
+use Illuminate\Routing\Pipeline;
+use Laravel\Fortify\Actions\AttemptToAuthenticate;
+use Laravel\Fortify\Actions\CanonicalizeUsername;
+use Laravel\Fortify\Actions\EnsureLoginIsNotThrottled;
+use Laravel\Fortify\Actions\PrepareAuthenticatedSession;
+use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
+use Laravel\Fortify\Features;
 use Illuminate\Http\Request;
+use App\Responses\RegisterResponse;
+
+
 
 class UserController extends Controller
 {
@@ -11,6 +46,69 @@ class UserController extends Controller
         return view('admin_login');
     }
 
+    public function adminLoginStore(LoginRequest $request)
+    {
+        $user = AdminUser::where('email', $request->email)->first();
+        if (!$user) {
+            return redirect()->route('admin.login')->withErrors(['adminLogin' => 'ログイン情報が登録されていません']);
+        }
+
+        if (!Hash::check($request->password, $user->password)) {
+            return redirect()->route('admin.login')->withErrors(['adminLogin' => 'パスワードが間違っています']);
+        }
+
+        // if ($user && !$user->hasVerifiedEmail()) {
+        //     return redirect()->route('login')->withErrors(['login' => 'メール認証が必要です。メールを確認してください。']);
+        // }
+
+        $this->loginPipeline($request);
+
+        return redirect()->route('admin.list');
+    }
+
+    protected function loginPipeline(LoginRequest $request)
+    {
+        if (Fortify::$authenticateThroughCallback) {
+            return (new Pipeline(app()))->send($request)->through(array_filter(
+                call_user_func(Fortify::$authenticateThroughCallback, $request)
+            ));
+        }
+
+        if (is_array(config('fortify.pipelines.login'))) {
+            return (new Pipeline(app()))->send($request)->through(array_filter(
+                config('fortify.pipelines.login')
+            ));
+        }
+
+        return (new Pipeline(app()))->send($request)->through(array_filter([
+            config('fortify.limiters.login') ? null : EnsureLoginIsNotThrottled::class,
+            config('fortify.lowercase_usernames') ? CanonicalizeUsername::class : null,
+            Features::enabled(Features::twoFactorAuthentication()) ? RedirectIfTwoFactorAuthenticatable::class : null,
+            AttemptToAuthenticate::class,
+            PrepareAuthenticatedSession::class,
+        ]));
+    }
+
+    // protected function loginPipeline(LoginRequest $request)
+    // {
+    //     try {
+    //         \Log::info('ログインパイプライン処理を開始しました');
+
+    //         return (new Pipeline(app()))->send($request)->through(array_filter([
+    //             config('fortify.limiters.login') ? null : EnsureLoginIsNotThrottled::class,
+    //             config('fortify.lowercase_usernames') ? CanonicalizeUsername::class : null,
+    //             Features::enabled(Features::twoFactorAuthentication()) ? RedirectIfTwoFactorAuthenticatable::class : null,
+    //             AttemptToAuthenticate::class,
+    //             PrepareAuthenticatedSession::class,
+    //         ]))->then(function ($request) {
+    //             \Log::info('全てのパイプラインステップを通過しました');
+    //             return $request; // 成功した場合はリクエストを返す
+    //         });
+    //     } catch (\Exception $e) {
+    //         \Log::error('ログインパイプライン中にエラーが発生しました: ', ['error' => $e->getMessage()]);
+    //         return redirect()->route('admin.login')->withErrors(['adminLogin' => 'ログイン処理中にエラーが発生しました。']);
+    //     }
+    // }
     public function adminList()
     {
         return view('admin_attendance');
@@ -46,10 +144,54 @@ class UserController extends Controller
         return view('general_login');
     }
 
+    public function loginStore(LoginRequest $request)
+    {
+        $user = GeneralUser::where('email', $request->email)->first();
+        if (!$user) {
+            return redirect()->route('login')->withErrors(['login' => 'ログイン情報が登録されていません']);
+        }
+
+
+        // if ($user && !$user->hasVerifiedEmail()) {
+        //     return redirect()->route('login')->withErrors(['login' => 'メール認証が必要です。メールを確認してください。']);
+        // }
+
+        if (!Hash::check($request->password, $user->password)) {
+            return redirect()->route('admin.login')->withErrors(['adminLogin' => 'パスワードが間違っています']);
+        }
+
+        return $this->loginPipeline($request)->then(function ($request) {
+            return app(LoginResponse::class);
+        });
+    }
+
     public function generalRegister()
     {
         return view('general_register');
     }
+
+    protected $guard;
+
+    public function __construct(StatefulGuard $guard)
+    {
+        $this->guard = $guard;
+    }
+
+    public function registerStore(RegisterRequest $request, CreatesNewUsers $creator): RegisterResponse
+    {
+        if (config('fortify.lowercase_usernames')) {
+            $request->merge([
+                Fortify::username() => Str::lower($request->{Fortify::username()}),
+            ]);
+        }
+
+        event(new Registered($user = $creator->create($request->all())));
+
+        $this->guard->login($user, $request->boolean('remember'));
+
+        return new RegisterResponse();
+    }
+
 
     public function generalList()
     {
