@@ -36,6 +36,7 @@ use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
 use Laravel\Fortify\Features;
 use Illuminate\Http\Request;
 use App\Responses\RegisterResponse;
+use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
 
 
 
@@ -66,49 +67,6 @@ class UserController extends Controller
         return redirect()->route('admin.list');
     }
 
-    protected function loginPipeline(LoginRequest $request)
-    {
-        if (Fortify::$authenticateThroughCallback) {
-            return (new Pipeline(app()))->send($request)->through(array_filter(
-                call_user_func(Fortify::$authenticateThroughCallback, $request)
-            ));
-        }
-
-        if (is_array(config('fortify.pipelines.login'))) {
-            return (new Pipeline(app()))->send($request)->through(array_filter(
-                config('fortify.pipelines.login')
-            ));
-        }
-
-        return (new Pipeline(app()))->send($request)->through(array_filter([
-            config('fortify.limiters.login') ? null : EnsureLoginIsNotThrottled::class,
-            config('fortify.lowercase_usernames') ? CanonicalizeUsername::class : null,
-            Features::enabled(Features::twoFactorAuthentication()) ? RedirectIfTwoFactorAuthenticatable::class : null,
-            AttemptToAuthenticate::class,
-            PrepareAuthenticatedSession::class,
-        ]));
-    }
-
-    // protected function loginPipeline(LoginRequest $request)
-    // {
-    //     try {
-    //         \Log::info('ログインパイプライン処理を開始しました');
-
-    //         return (new Pipeline(app()))->send($request)->through(array_filter([
-    //             config('fortify.limiters.login') ? null : EnsureLoginIsNotThrottled::class,
-    //             config('fortify.lowercase_usernames') ? CanonicalizeUsername::class : null,
-    //             Features::enabled(Features::twoFactorAuthentication()) ? RedirectIfTwoFactorAuthenticatable::class : null,
-    //             AttemptToAuthenticate::class,
-    //             PrepareAuthenticatedSession::class,
-    //         ]))->then(function ($request) {
-    //             \Log::info('全てのパイプラインステップを通過しました');
-    //             return $request; // 成功した場合はリクエストを返す
-    //         });
-    //     } catch (\Exception $e) {
-    //         \Log::error('ログインパイプライン中にエラーが発生しました: ', ['error' => $e->getMessage()]);
-    //         return redirect()->route('admin.login')->withErrors(['adminLogin' => 'ログイン処理中にエラーが発生しました。']);
-    //     }
-    // }
     public function adminList()
     {
         return view('admin_attendance');
@@ -146,28 +104,22 @@ class UserController extends Controller
 
     public function loginStore(LoginRequest $request)
     {
-        $user = GeneralUser::where('email', $request->email)->first();
-        if (!$user) {
-            return redirect()->route('login')->withErrors(['login' => 'ログイン情報が登録されていません']);
+        Log::info('ログイン試行: ' . $request->email);
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+            Log::info('ログイン成功: ' . $request->email);
+            return $this->loginPipeline($request)->then(function ($request) {
+                Log::info('ログインパイプライン成功: ' . $request->email);
+                return app(LoginResponse::class);
+            });
+            // return redirect()->intended('/attendance');
         }
 
+        Log::warning('ログイン失敗: ' . $request->email);
+        return redirect()->route('login')->withErrors(['login' => 'ログイン情報が間違っています']);
 
         // if ($user && !$user->hasVerifiedEmail()) {
         //     return redirect()->route('login')->withErrors(['login' => 'メール認証が必要です。メールを確認してください。']);
         // }
-
-        if (!Hash::check($request->password, $user->password)) {
-            return redirect()->route('admin.login')->withErrors(['adminLogin' => 'パスワードが間違っています']);
-        }
-
-        return $this->loginPipeline($request)->then(function ($request) {
-            return app(LoginResponse::class);
-        });
-    }
-
-    public function generalRegister()
-    {
-        return view('general_register');
     }
 
     protected $guard;
@@ -175,6 +127,37 @@ class UserController extends Controller
     public function __construct(StatefulGuard $guard)
     {
         $this->guard = $guard;
+    }
+
+    protected function loginPipeline(LoginRequest $request)
+    {
+        Log::info('ログインパイプライン開始');
+        if (Fortify::$authenticateThroughCallback) {
+            return (new Pipeline(app()))->send($request)->through(array_filter(
+                call_user_func(Fortify::$authenticateThroughCallback, $request)
+            ));
+        }
+
+        if (is_array(config('fortify.pipelines.login'))) {
+            Log::info('Fortifyパイプラインを使用しています。');
+            return (new Pipeline(app()))->send($request)->through(array_filter(
+                config('fortify.pipelines.login')
+            ));
+        }
+
+        Log::info('デフォルトのパイプラインを使用中');
+        return (new Pipeline(app()))->send($request)->through(array_filter([
+            config('fortify.limiters.login') ? null : EnsureLoginIsNotThrottled::class,
+            config('fortify.lowercase_usernames') ? CanonicalizeUsername::class : null,
+            Features::enabled(Features::twoFactorAuthentication()) ? RedirectIfTwoFactorAuthenticatable::class : null,
+            AttemptToAuthenticate::class,
+            PrepareAuthenticatedSession::class,
+        ]));
+    }
+
+    public function generalRegister()
+    {
+        return view('general_register');
     }
 
     public function registerStore(RegisterRequest $request, CreatesNewUsers $creator): RegisterResponse
@@ -213,23 +196,5 @@ class UserController extends Controller
         return view('general_applications');
     }
 
-    public function attendance()
-    {
-        return view('work_before');
-    }
 
-    public function attendance2()
-    {
-        return view('work_after');
-    }
-
-    public function attendance3()
-    {
-        return view('work_break');
-    }
-
-    public function attendance4()
-    {
-        return view('work_finish');
-    }
 }

@@ -19,6 +19,8 @@ use Laravel\Fortify\Contracts\LoginResponse;
 use Laravel\Fortify\Contracts\LogoutResponse;
 use Illuminate\Support\Facades\Hash;
 
+
+
 class FortifyServiceProvider extends ServiceProvider
 {
     /**

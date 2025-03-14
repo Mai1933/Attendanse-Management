@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\TimeController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
@@ -26,7 +27,14 @@ use Laravel\Fortify\RoutePath;
 // 一般ユーザー
 Route::get('/login', [UserController::class, 'generalLogin'])->name('login');
 
-Route::post('/login', [UserController::class, 'loginStore']);
+// Route::post('/login', [UserController::class, 'loginStore']);
+$limiter = config('fortify.limiters.login');
+$twoFactorLimiter = config('fortify.limiters.two-factor');
+$verificationLimiter = config('fortify.limiters.verification', '6,1');
+Route::post('/login', [UserController::class, 'loginStore'])->middleware(array_filter([
+    'guest:' . config('fortify.guard'),
+    $limiter ? 'throttle:' . $limiter : null,
+]))->name('login.store');
 
 Route::get('/register', [UserController::class, 'generalRegister']);
 
@@ -42,13 +50,15 @@ Route::get('/wait', [UserController::class, 'checkWait']);
 
 Route::get('/stamp_correction_request/list', [UserController::class, 'applicationsList']);
 
-Route::get('/attendance', [UserController::class, 'attendance']);
+Route::get('/attendance', [TimeController::class, 'attendance']);
 
-Route::get('/attendance2', [UserController::class, 'attendance2']);
+Route::post('/attendance', [TimeController::class, 'attendanceStore']);
 
-Route::get('/attendance3', [UserController::class, 'attendance3']);
+Route::get('/attendance2', [TimeController::class, 'attendance2']);
 
-Route::get('/attendance4', [UserController::class, 'attendance4']);
+Route::get('/attendance3', [TimeController::class, 'attendance3']);
+
+Route::get('/attendance4', [TimeController::class, 'attendance4']);
 
 // 管理者
 Route::get('/admin/login', [UserController::class, 'adminLogin'])->name('admin.login');
