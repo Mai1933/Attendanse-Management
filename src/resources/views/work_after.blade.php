@@ -7,7 +7,7 @@
 @section('content')
     <div class="works">
         <div class="works_inner">
-            <form action="" class="works_form">
+            <form action="" method="" class="works_form">
                 @csrf
                 <div class="works_status">
                     <p class="works_status-content">出勤中</p>
@@ -17,8 +17,8 @@
                     <p class="works_time-content">{{ $time }}</p>
                 </div>
                 <div class="works_buttons">
-                    <button type="submit" class="works_buttons-work">退勤</button>
-                    <button type="submit" class="works_buttons-break">休憩入</button>
+                    <a href="/attendance/complete" class="works_buttons-work">退勤</a>
+                    <a href="/attendance/break" class="works_buttons-break">休憩入</a>
                 </div>
             </form>
         </div>

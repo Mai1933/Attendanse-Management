@@ -12,6 +12,11 @@
                 <div class="works_status">
                     <p class="works_status-content">勤務外</p>
                 </div>
+                @error('attendance')
+                    <span class="works_error-login">
+                        <p class="works_error_message">{{$errors->first('attendance')}}</p>
+                    </span>
+                @enderror
                 <p class="works_date">{{ $date }}({{ $dayOfWeek }})</p>
                 <div class="works_time">
                     <p class="works_time-content">{{ $time }}</p>

@@ -18,7 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('work_id');
             $table->foreign('work_id')->references('id')->on('works');
             $table->time('start_time');
-            $table->time('end_time')->nullable;
+            $table->time('end_time')->nullable();
             $table->time('fixed_start_time')->nullable();
             $table->time('fixed_end_time')->nullable();
             $table->timestamps();

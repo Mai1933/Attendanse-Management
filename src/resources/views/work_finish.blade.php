@@ -10,7 +10,7 @@
             <form action="" class="works_form">
                 @csrf
                 <div class="works_status">
-                    <p class="works_status-content">休憩中</p>
+                    <p class="works_status-content">退勤済</p>
                 </div>
                 <p class="works_date">{{ $date }}({{ $dayOfWeek }})</p>
                 <div class="works_time">

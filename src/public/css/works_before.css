@@ -43,6 +43,13 @@
     padding: 10px 5px 7px 8px;
 }
 
+.works_error-login {}
+
+.works_error_message {
+    color: red;
+    font-size: 25px;
+}
+
 .works_date {
     color: #000;
     font-size: 40px;

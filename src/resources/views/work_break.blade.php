@@ -17,7 +17,7 @@
                     <p class="works_time-content">{{ $time }}</p>
                 </div>
                 <div class="works_buttons">
-                    <button type="submit" class="works_buttons-break">休憩戻</button>
+                    <a href="/attendance/return" class="works_buttons-break">休憩戻</a>
                 </div>
             </form>
         </div>

@@ -27,14 +27,14 @@ use Laravel\Fortify\RoutePath;
 // 一般ユーザー
 Route::get('/login', [UserController::class, 'generalLogin'])->name('login');
 
-// Route::post('/login', [UserController::class, 'loginStore']);
-$limiter = config('fortify.limiters.login');
-$twoFactorLimiter = config('fortify.limiters.two-factor');
-$verificationLimiter = config('fortify.limiters.verification', '6,1');
-Route::post('/login', [UserController::class, 'loginStore'])->middleware(array_filter([
-    'guest:' . config('fortify.guard'),
-    $limiter ? 'throttle:' . $limiter : null,
-]))->name('login.store');
+Route::post('/login', [UserController::class, 'loginStore']);
+// $limiter = config('fortify.limiters.login');
+// $twoFactorLimiter = config('fortify.limiters.two-factor');
+// $verificationLimiter = config('fortify.limiters.verification', '6,1');
+// Route::post('/login', [UserController::class, 'loginStore'])->middleware(array_filter([
+//     'guest:' . config('fortify.guard'),
+//     $limiter ? 'throttle:' . $limiter : null,
+// ]))->name('login.store');
 
 Route::get('/register', [UserController::class, 'generalRegister']);
 
@@ -54,11 +54,11 @@ Route::get('/attendance', [TimeController::class, 'attendance']);
 
 Route::post('/attendance', [TimeController::class, 'attendanceStore']);
 
-Route::get('/attendance2', [TimeController::class, 'attendance2']);
+Route::get('/attendance/break', [TimeController::class, 'breakingStore']);
 
-Route::get('/attendance3', [TimeController::class, 'attendance3']);
+Route::get('/attendance/return', [TimeController::class, 'returningStore']);
 
-Route::get('/attendance4', [TimeController::class, 'attendance4']);
+Route::get('/attendance/complete', [TimeController::class, 'completeStore']);
 
 // 管理者
 Route::get('/admin/login', [UserController::class, 'adminLogin'])->name('admin.login');

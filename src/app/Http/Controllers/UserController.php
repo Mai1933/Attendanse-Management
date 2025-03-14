@@ -104,17 +104,17 @@ class UserController extends Controller
 
     public function loginStore(LoginRequest $request)
     {
-        Log::info('ログイン試行: ' . $request->email);
+        // Log::info('ログイン試行: ' . $request->email);
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
-            Log::info('ログイン成功: ' . $request->email);
+            // Log::info('ログイン成功: ' . $request->email);
             return $this->loginPipeline($request)->then(function ($request) {
-                Log::info('ログインパイプライン成功: ' . $request->email);
+                // Log::info('ログインパイプライン成功: ' . $request->email);
                 return app(LoginResponse::class);
             });
             // return redirect()->intended('/attendance');
         }
 
-        Log::warning('ログイン失敗: ' . $request->email);
+        // Log::warning('ログイン失敗: ' . $request->email);
         return redirect()->route('login')->withErrors(['login' => 'ログイン情報が間違っています']);
 
         // if ($user && !$user->hasVerifiedEmail()) {
@@ -131,7 +131,7 @@ class UserController extends Controller
 
     protected function loginPipeline(LoginRequest $request)
     {
-        Log::info('ログインパイプライン開始');
+        // Log::info('ログインパイプライン開始');
         if (Fortify::$authenticateThroughCallback) {
             return (new Pipeline(app()))->send($request)->through(array_filter(
                 call_user_func(Fortify::$authenticateThroughCallback, $request)
@@ -139,13 +139,13 @@ class UserController extends Controller
         }
 
         if (is_array(config('fortify.pipelines.login'))) {
-            Log::info('Fortifyパイプラインを使用しています。');
+            // Log::info('Fortifyパイプラインを使用しています。');
             return (new Pipeline(app()))->send($request)->through(array_filter(
                 config('fortify.pipelines.login')
             ));
         }
 
-        Log::info('デフォルトのパイプラインを使用中');
+        // Log::info('デフォルトのパイプラインを使用中');
         return (new Pipeline(app()))->send($request)->through(array_filter([
             config('fortify.limiters.login') ? null : EnsureLoginIsNotThrottled::class,
             config('fortify.lowercase_usernames') ? CanonicalizeUsername::class : null,
