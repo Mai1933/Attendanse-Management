@@ -39,7 +39,7 @@ Route::get('/attendance/list/{year}/{month}', [UserController::class, 'generalOt
 
 Route::get('/attendance/list', [UserController::class, 'generalList']);
 
-Route::get('/attendance/id', [UserController::class, 'generalWorkDetail']);
+Route::get('/attendance/{id}', [UserController::class, 'generalWorkDetail']);
 
 Route::get('/wait', [UserController::class, 'checkWait']);
 

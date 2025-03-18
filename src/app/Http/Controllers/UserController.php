@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\LoginRequest;
 use DateTime;
+use Carbon\Carbon;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Routing\Controller;
@@ -282,9 +283,15 @@ class UserController extends Controller
         return view('general_attendance', compact('month', 'year', 'previousMonth', 'nextMonth', 'dayOfWeek', 'date', 'works', 'workDayOfWeek', 'formattedBreakTimes', 'formattedWorkTimes'));
     }
 
-    public function generalWorkDetail()
+    public function generalWorkDetail($id)
     {
-        return view('general_detail');
+        $user = Auth::user();
+        $work = Work::where('id', $id)->first();
+        $year = Carbon::parse($work->date)->format('Y年');
+        $date = Carbon::parse($work->date)->format('n月j日');
+
+        $breakings = Breaking::where('work_id', $id)->get();
+        return view('general_detail', compact('work', 'year', 'date', 'breakings'));
     }
 
     public function checkWait()

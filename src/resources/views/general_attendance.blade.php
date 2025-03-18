@@ -39,18 +39,22 @@
                         <tr>
                             <td colspan="6" class="table_content-time text-center">該当する勤怠データはありません。</td> <!-- メッセージを表示 -->
                         </tr>
-                        @else
+                    @else
                         @foreach ($works as $work)
                             <tr class="table_contents">
-                                <td class="table_content-name">{{ date('m/d', strtotime($work->date))}}({{ $workDayOfWeek[$work->id] }})</td>
+                                <td class="table_content-name">
+                                    {{ date('m/d', strtotime($work->date))}}({{ $workDayOfWeek[$work->id] }})
+                                </td>
                                 <td class="table_content-time">
-                                    {{ $work->start_time ? date('H:i', strtotime($work->start_time)) : '' }}</td>
+                                    {{ $work->start_time ? date('H:i', strtotime($work->start_time)) : '' }}
+                                </td>
                                 <td class="table_content-time">
-                                    {{ $work->end_time ? date('H:i', strtotime($work->end_time)) : '' }}</td>
+                                    {{ $work->end_time ? date('H:i', strtotime($work->end_time)) : '' }}
+                                </td>
                                 <td class="table_content-time">{{ $formattedBreakTimes[$work->id] }}</td>
                                 <td class="table_content-time">{{ $formattedWorkTimes[$work->id] }}</td>
                                 <td class="table_detail">
-                                    <a href="" class="detail_link">詳細</a>
+                                    <a href="/attendance/{{ $work->id }}" class="detail_link">詳細</a>
                                 </td>
                             </tr>
                         @endforeach

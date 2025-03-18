@@ -28,8 +28,8 @@
                     </div>
                     <div class="row_content">
                         <div class="row_content-inner">
-                            <input type="text" class="row_content-input" value="2023年" name="year">
-                            <input type="text" class="row_content-input" value="6月1日" name="date">
+                            <input type="text" class="row_content-input" value="{{ $year }}" name="year">
+                            <input type="text" class="row_content-input" value="{{ $date }}" name="date">
                         </div>
                     </div>
                 </div>
@@ -39,43 +39,37 @@
                     </div>
                     <div class="row_content">
                         <div class="row_content-inner">
-                            <input type="text" class="row_content-input" value="09:00" name="work_start">
+                            <input type="text" class="row_content-input"
+                                value="{{ date('H:i', strtotime($work->start_time)) }}" name="work_start">
                             <p class="row_content-character">〜</p>
-                            <input type="text" class="row_content-input" value="20:00" name="work_end">
+                            <input type="text" class="row_content-input"
+                                value="{{ date('H:i', strtotime($work->end_time)) }}" name="work_end">
                         </div>
                     </div>
                 </div>
-                <div class="information_row">
-                    <div class="row_ttl">
-                        <p class="row_ttl-content">休憩</p>
-                    </div>
-                    <div class="row_content">
-                        <div class="row_content-inner">
-                            <input type="text" class="row_content-input" value="12:00" name="break_start">
-                            <p class="row_content-character">〜</p>
-                            <input type="text" class="row_content-input" value="13:00" name="break_end">
+                @foreach ($breakings as $breaking)
+                    <div class="information_row">
+                        <div class="row_ttl">
+                            <p class="row_ttl-content">休憩</p>
+                        </div>
+                        <div class="row_content">
+                            <div class="row_content-inner">
+                                <input type="text" class="row_content-input"
+                                    value="{{ date('H:i', strtotime($breaking->start_time)) }}" name="break_start">
+                                <p class="row_content-character">〜</p>
+                                <input type="text" class="row_content-input"
+                                    value="{{ date('H:i', strtotime($breaking->end_time)) }}" name="break_end">
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="information_row">
-                    <div class="row_ttl">
-                        <p class="row_ttl-content">休憩2</p>
-                    </div>
-                    <div class="row_content">
-                        <div class="row_content-inner">
-                            <input type="text" class="row_content-input" name="break_start2">
-                            <p class="row_content-character">〜</p>
-                            <input type="text" class="row_content-input" name="break_end2">
-                        </div>
-                    </div>
-                </div>
+                @endforeach
                 <div class="information_row-last">
                     <div class="row_ttl">
                         <p class="row_ttl-content">備考</p>
                     </div>
                     <div class="row_content">
                         <div class="row_content-inner">
-                            <textarea name="remarks" class="row_content-textarea">電車遅延のため</textarea>
+                            <textarea name="remarks" class="row_content-textarea">{{ $work->remarks }}</textarea>
                         </div>
                     </div>
                 </div>
