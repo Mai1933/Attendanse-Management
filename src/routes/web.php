@@ -28,19 +28,14 @@ use Laravel\Fortify\RoutePath;
 Route::get('/login', [UserController::class, 'generalLogin'])->name('login');
 
 Route::post('/login', [UserController::class, 'loginStore']);
-// $limiter = config('fortify.limiters.login');
-// $twoFactorLimiter = config('fortify.limiters.two-factor');
-// $verificationLimiter = config('fortify.limiters.verification', '6,1');
-// Route::post('/login', [UserController::class, 'loginStore'])->middleware(array_filter([
-//     'guest:' . config('fortify.guard'),
-//     $limiter ? 'throttle:' . $limiter : null,
-// ]))->name('login.store');
 
 Route::get('/register', [UserController::class, 'generalRegister']);
 
 Route::post('/register', [UserController::class, 'registerStore'])
     ->middleware(['guest:' . config('fortify.guard')])
     ->name('register.store');
+
+Route::get('/attendance/list/{year}/{month}', [UserController::class, 'generalOtherMonthList']);
 
 Route::get('/attendance/list', [UserController::class, 'generalList']);
 

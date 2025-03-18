@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\LoginRequest;
+use DateTime;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Routing\Controller;
@@ -15,6 +16,8 @@ use Laravel\Fortify\Fortify;
 use App\Actions\Fortify\CreateNewUser;
 use App\Models\GeneralUser;
 use App\Models\AdminUser;
+use App\Models\Work;
+use App\Models\Breaking;
 use Illuminate\Support\Facades\Log;
 use App\Http\Requests\ExhibitionRequest;
 use App\Models\Comment;
@@ -178,7 +181,105 @@ class UserController extends Controller
 
     public function generalList()
     {
-        return view('general_attendance');
+        $user = Auth::user();
+        $month = date('Y/m');
+        $year = date('Y');
+        $previousMonth = (new DateTime($month . '/01'))->modify('-1 month')->format('m');
+        $nextMonth = (new DateTime($month . '/01'))->modify('+1 month')->format('m');
+        $week = ['日', '月', '火', '水', '木', '金', '土'];
+        $dayOfWeek = $week[date('w')];
+        $date = date('m/d');
+
+        $workData = Work::where('user_id', $user->id)->get();
+        $todayMonth = date('Y-m');
+        $works = $workData->filter(function ($item) use ($todayMonth) {
+            return strpos($item->date, $todayMonth) === 0;
+        })->values();
+
+        $workDayOfWeek = [];
+        $formattedBreakTimes = [];
+        $formattedWorkTimes = [];
+        $totalBreakTimes = [];
+        $totalWorkTimes = [];
+
+        foreach ($works as $work) {
+            $workDayOfWeek[$work->id] = $week[date('w', strtotime($work->date))];
+            $breakings = Breaking::where('work_id', $work->id)->get();
+
+            $totalBreakTime = 0;
+            foreach ($breakings as $breaking) {
+                if ($breaking->start_time && $breaking->end_time) {
+                    $startTime = strtotime($breaking->start_time);
+                    $endTime = strtotime($breaking->end_time);
+                    $totalBreakTime += ($endTime - $startTime);
+                }
+            }
+            $totalBreakTimes[$work->id] = $totalBreakTime;
+            $breakHours = floor($totalBreakTimes[$work->id] / 3600);
+            $breakMinutes = floor(($totalBreakTimes[$work->id] % 3600) / 60);
+            $formattedBreakTimes[$work->id] = sprintf('%2d:%02d', $breakHours, $breakMinutes);
+
+            $workStartTime = strtotime($work->start_time);
+            $workEndTime = strtotime($work->end_time);
+            $totalWorkTime = ($workEndTime - $workStartTime) - $totalBreakTimes[$work->id];
+            $workHours = floor($totalWorkTime / 3600);
+            $workMinutes = floor(($totalWorkTime % 3600) / 60);
+            $formattedWorkTimes[$work->id] = sprintf('%2d:%02d', $workHours, $workMinutes);
+        }
+
+        return view('general_attendance', compact('month', 'year', 'previousMonth', 'nextMonth', 'dayOfWeek', 'date', 'works', 'workDayOfWeek', 'formattedBreakTimes', 'formattedWorkTimes'));
+    }
+
+    public function generalOtherMonthList($year, $month)
+    {
+        $user = Auth::user();
+        $month = $month;
+        $year = $year;
+        $previousMonth = (new DateTime($month . '/01'))->modify('-1 month')->format('m');
+        $nextMonth = (new DateTime($month . '/01'))->modify('+1 month')->format('m');
+        $week = ['日', '月', '火', '水', '木', '金', '土'];
+        $dayOfWeek = $week[date('w')];
+        $date = date('m/d');
+
+        $workData = Work::where('user_id', $user->id)->get();
+        $monthString = $year . '-' . $month;
+        // $todayMonth = date('Y-m');
+        $works = $workData->filter(function ($item) use ($monthString) {
+            return strpos($item->date, $monthString) === 0;
+        })->values();
+
+        $workDayOfWeek = [];
+        $formattedBreakTimes = [];
+        $formattedWorkTimes = [];
+        $totalBreakTimes = [];
+        $totalWorkTimes = [];
+
+        foreach ($works as $work) {
+            $workDayOfWeek[$work->id] = $week[date('w', strtotime($work->date))];
+            $breakings = Breaking::where('work_id', $work->id)->get();
+
+            $totalBreakTime = 0;
+            foreach ($breakings as $breaking) {
+                if ($breaking->start_time && $breaking->end_time) {
+                    $startTime = strtotime($breaking->start_time);
+                    $endTime = strtotime($breaking->end_time);
+                    $totalBreakTime += ($endTime - $startTime);
+                }
+            }
+            $totalBreakTimes[$work->id] = $totalBreakTime;
+            $breakHours = floor($totalBreakTimes[$work->id] / 3600);
+            $breakMinutes = floor(($totalBreakTimes[$work->id] % 3600) / 60);
+            $formattedBreakTimes[$work->id] = sprintf('%2d:%02d', $breakHours, $breakMinutes);
+
+            $workStartTime = strtotime($work->start_time);
+            $workEndTime = strtotime($work->end_time);
+            $totalWorkTime = ($workEndTime - $workStartTime) - $totalBreakTimes[$work->id];
+            $workHours = floor($totalWorkTime / 3600);
+            $workMinutes = floor(($totalWorkTime % 3600) / 60);
+            $formattedWorkTimes[$work->id] = sprintf('%2d:%02d', $workHours, $workMinutes);
+        }
+
+        return view('general_attendance', compact('month', 'year', 'previousMonth', 'nextMonth', 'dayOfWeek', 'date', 'works', 'workDayOfWeek', 'formattedBreakTimes', 'formattedWorkTimes'));
     }
 
     public function generalWorkDetail()

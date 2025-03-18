@@ -25,5 +25,16 @@ class WorksTableSeeder extends Seeder
             ];
             DB::table('works')->insert($param);
         }
+
+        $dates = [20250311, 20250312, 20250313, 20250314, 20250315, 20250316, 20250416, 20250417,];
+        foreach ($dates as $date) {
+            $param = [
+                'user_id' => 1,
+                'date' => $date,
+                'start_time' => '07:00:00',
+                'end_time' => '18:24:00',
+            ];
+            DB::table('works')->insert($param);
+        }
     }
 }
