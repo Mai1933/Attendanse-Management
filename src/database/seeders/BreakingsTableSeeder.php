@@ -25,10 +25,16 @@ class BreakingsTableSeeder extends Seeder
             ];
             DB::table('breakings')->insert($param);
         }
-
         $param = [
             'user_id' => 1,
             'work_id' => 1,
+            'start_time' => '14:30:00',
+            'end_time' => '15:13:00'
+        ];
+        DB::table('breakings')->insert($param);
+        $param = [
+            'user_id' => 1,
+            'work_id' => 7,
             'start_time' => '14:30:00',
             'end_time' => '15:13:00'
         ];

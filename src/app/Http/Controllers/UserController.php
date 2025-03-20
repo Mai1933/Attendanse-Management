@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\LoginRequest;
+use App\Http\Requests\ApplyRequest;
 use DateTime;
 use Carbon\Carbon;
 use Illuminate\Auth\Events\Registered;
@@ -19,6 +20,8 @@ use App\Models\GeneralUser;
 use App\Models\AdminUser;
 use App\Models\Work;
 use App\Models\Breaking;
+use App\Models\BreakingApplication;
+use App\Models\WorkingApplication;
 use Illuminate\Support\Facades\Log;
 use App\Http\Requests\ExhibitionRequest;
 use App\Models\Comment;
@@ -291,7 +294,46 @@ class UserController extends Controller
         $date = Carbon::parse($work->date)->format('n月j日');
 
         $breakings = Breaking::where('work_id', $id)->get();
-        return view('general_detail', compact('work', 'year', 'date', 'breakings'));
+        return view('general_detail', compact('user', 'work', 'year', 'date', 'breakings'));
+    }
+
+    public function apply(ApplyRequest $request, $id)
+    {
+        $user = Auth::user();
+
+        $workData = Work::where('id', $id)->first();
+        $year = trim(str_replace('年', '', $request->year));
+        $date = trim(str_replace('月', '-', str_replace('日', '', $request->date)));
+        $applyDate = date('Y-m-d', strtotime($year . '-' . $date));
+        // Log::info('Year: ' . $year);
+        // Log::info('Date: ' . $date);
+        // Log::info('Apply Date: ' . $applyDate);
+
+        $workingApplication = new WorkingApplication();
+
+        $workingApplication->user_id = $user->id;
+        $workingApplication->work_id = $id;
+        $workingApplication->date = $applyDate;
+        $workingApplication->start_time = $request->work_start;
+        $workingApplication->end_time = $request->work_end;
+        $workingApplication->remarks = $request->remarks;
+        $workingApplication->status = '承認待ち';
+        $workingApplication->save();
+
+        if ($request->has('break_start') && $request->has('break_end')) {
+            foreach ($request->break_start as $index => $breakStart) {
+                if (!empty($breakStart) && isset($request->break_end[$index])) {
+                    $breakingApplication = new BreakingApplication();
+                    $breakingApplication->user_id = $user->id;
+                    $breakingApplication->work_id = $id;
+                    $breakingApplication->start_time = $breakStart;
+                    $breakingApplication->end_time = $request->break_end[$index];
+                    $breakingApplication->save();
+                }
+            }
+        }
+
+        return redirect('/attendance/list');
     }
 
     public function checkWait()
@@ -301,7 +343,22 @@ class UserController extends Controller
 
     public function applicationsList()
     {
-        return view('general_applications');
+        $user = Auth::user();
+        $waitingWorkings = WorkingApplication::where('user_id', $user->id)->where('status', '承認待ち')->get();
+
+        $waitingOldWork = [];
+        foreach ($waitingWorkings as $waitingWorking) {
+            $waitingOldWork[$waitingWorking->work_id] = Work::where('id', $waitingWorking->work_id)->first();
+        }
+
+        $completedWorkings = WorkingApplication::where('user_id', $user->id)->where('status', '承認済み')->get();
+
+        $completedOldWork = [];
+        foreach ($completedWorkings as $completedWorking) {
+            $completedOldWork[$completedWorking->work_id] = Work::where('id', $completedWorking->work_id)->first();
+        }
+
+        return view('general_applications', compact('user', 'waitingWorkings', 'waitingOldWork','completedWorkings','completedOldWork'));
     }
 
 

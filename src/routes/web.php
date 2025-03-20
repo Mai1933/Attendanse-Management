@@ -41,6 +41,8 @@ Route::get('/attendance/list', [UserController::class, 'generalList']);
 
 Route::get('/attendance/{id}', [UserController::class, 'generalWorkDetail']);
 
+Route::post('/attendance/{id}', [UserController::class, 'apply']);
+
 Route::get('/wait', [UserController::class, 'checkWait']);
 
 Route::get('/stamp_correction_request/list', [UserController::class, 'applicationsList']);

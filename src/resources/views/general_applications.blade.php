@@ -25,16 +25,20 @@
                             <p class="table_content">申請日時</p>
                             <p class="table_content-small">詳細</p>
                         </div>
-                        <div class="content_information">
-                            <p class="table_content-small">承認待ち</p>
-                            <p class="table_content-small">西玲奈</p>
-                            <p class="table_content">2023/06/01</p>
-                            <p class="table_content">遅延のため</p>
-                            <p class="table_content">2023/06/02</p>
-                            <p class="table_content-small">
-                                <a href="" class="detail_link">詳細</a>
-                            </p>
-                        </div>
+                        @foreach ($waitingWorkings as $waitingWorking)
+                            <div class="content_information">
+                                <p class="table_content-small">{{ $waitingWorking->status }}</p>
+                                <p class="table_content-small">{{ $user->name }}</p>
+                                <p class="table_content">
+                                    {{ date('Y/m/d', strtotime($waitingOldWork[$waitingWorking->work_id]->date)) }}
+                                </p>
+                                <p class="table_content">{{ $waitingWorking->remarks }}</p>
+                                <p class="table_content">{{ date('Y/m/d', strtotime($waitingWorking->date)) }}</p>
+                                <p class="table_content-small">
+                                    <a href="" class="detail_link">詳細</a>
+                                </p>
+                            </div>
+                        @endforeach
                     </div>
                 </div>
                 <div class="tab_content" id="approved_content">
@@ -47,16 +51,19 @@
                             <p class="table_content">申請日時</p>
                             <p class="table_content-small">詳細</p>
                         </div>
-                        <div class="content_information">
-                            <p class="table_content-small">承認済み</p>
-                            <p class="table_content-small">入間美兎</p>
-                            <p class="table_content">2023/06/01</p>
-                            <p class="table_content">遅延のため</p>
-                            <p class="table_content">2023/06/02</p>
-                            <p class="table_content-small">
-                                <a href="" class="detail_link">詳細</a>
-                            </p>
-                        </div>
+                        @foreach ($completedWorkings as $completedWorking)
+                            <div class="content_information">
+                                <p class="table_content-small">{{ $completedWorking->status }}</p>
+                                <p class="table_content-small">{{ $user->name }}</p>
+                                <p class="table_content">
+                                    {{ date('Y/m/d', strtotime($completedOldWork[$completedWorking->work_id]->date)) }}</p>
+                                <p class="table_content">{{ $completedWorking->remarks }}</p>
+                                <p class="table_content">{{ date('Y/m/d',strtotime($completedWorking->date))}}</p>
+                                <p class="table_content-small">
+                                    <a href="" class="detail_link">詳細</a>
+                                </p>
+                            </div>
+                        @endforeach
                     </div>
                 </div>
             </div>

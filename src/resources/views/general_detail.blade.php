@@ -10,7 +10,16 @@
             <div class="ttl">
                 <h2 class="ttl_content">勤怠詳細</h2>
             </div>
-            <form class="information">
+            @if ($errors->any())
+                <div class="error_messages">
+                    <ul>
+                        @foreach ($errors->all() as $error)
+                            <li class="error_message">{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+            <form class="information" action="/attendance/{{ $work->id }}" method="post">
                 @csrf
                 <div class="information_row-first">
                     <div class="row_ttl">
@@ -18,7 +27,7 @@
                     </div>
                     <div class="row_content">
                         <div class="row_content-inner-name">
-                            <p class="row_content-name">西　伶奈</p>
+                            <p class="row_content-name">{{ $user->name }}</p>
                         </div>
                     </div>
                 </div>
@@ -47,7 +56,7 @@
                         </div>
                     </div>
                 </div>
-                @foreach ($breakings as $breaking)
+                @foreach ($breakings as $index => $breaking)
                     <div class="information_row">
                         <div class="row_ttl">
                             <p class="row_ttl-content">休憩</p>
@@ -55,10 +64,11 @@
                         <div class="row_content">
                             <div class="row_content-inner">
                                 <input type="text" class="row_content-input"
-                                    value="{{ date('H:i', strtotime($breaking->start_time)) }}" name="break_start">
+                                    value="{{ date('H:i', strtotime($breaking->start_time)) }}"
+                                    name="break_start[{{ $index }}]">
                                 <p class="row_content-character">〜</p>
                                 <input type="text" class="row_content-input"
-                                    value="{{ date('H:i', strtotime($breaking->end_time)) }}" name="break_end">
+                                    value="{{ date('H:i', strtotime($breaking->end_time)) }}" name="break_end[{{ $index }}]">
                             </div>
                         </div>
                     </div>
@@ -68,7 +78,7 @@
                         <p class="row_ttl-content">備考</p>
                     </div>
                     <div class="row_content">
-                        <div class="row_content-inner">
+                        <div class="row_content-inner-textarea">
                             <textarea name="remarks" class="row_content-textarea">{{ $work->remarks }}</textarea>
                         </div>
                     </div>
