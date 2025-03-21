@@ -41,7 +41,7 @@
                         <tr class="table_contents">
                             <td class="table_content-name">{{ $user[$todaysWork->id]->name }}</td>
                             <td class="table_content-time">{{ date('H:i', strtotime($todaysWork->start_time))}}</td>
-                            <td class="table_content-time">{{ date('H:i', strtotime($todaysWork->end_time)) }}</td>
+                            <td class="table_content-time">{{ $todaysWork->end_time ? date('H:i', strtotime($todaysWork->end_time)) : '' }}</td>
                             <td class="table_content-time">{{ $formattedBreakTimes[$todaysWork->id] }}</td>
                             <td class="table_content-time">{{ $formattedWorkTimes[$todaysWork->id] }}</td>
                             <td class="table_detail">

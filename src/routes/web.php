@@ -39,9 +39,9 @@ Route::get('/attendance/list/{year}/{month}', [UserController::class, 'generalOt
 
 Route::get('/attendance/list', [UserController::class, 'generalList']);
 
-Route::get('/attendance/{id}', [UserController::class, 'generalWorkDetail']);
+Route::get('/attendance/{id}', [UserController::class, 'generalWorkDetail'])->where('id', '[0-9]+');
 
-Route::post('/attendance/{id}', [UserController::class, 'apply']);
+Route::post('/attendance/{id}', [UserController::class, 'apply'])->where('id', '[0-9]+');
 
 Route::get('/wait', [UserController::class, 'checkWait']);
 
@@ -56,6 +56,7 @@ Route::get('/attendance/break', [TimeController::class, 'breakingStore']);
 Route::get('/attendance/return', [TimeController::class, 'returningStore']);
 
 Route::get('/attendance/complete', [TimeController::class, 'completeStore']);
+
 
 // 管理者
 Route::get('/admin/login', [UserController::class, 'adminLogin'])->name('admin.login');
@@ -72,11 +73,14 @@ Route::get('/admin/attendance/{id}', [UserController::class, 'adminWorkDetail'])
 
 Route::put('/admin/attendance/{id}', [UserController::class, 'fix'])->where('id', '[0-9]+');
 
-Route::get('/admin/attendance/staff/id', [UserController::class, 'individualWorks']);
+Route::get('/admin/attendance/staff/{id}', [UserController::class, 'individualWorks'])->where('id', '[0-9]+');
+
+Route::get('/admin/attendance/staff/{id}/{date}', [UserController::class, 'individualOtherMonthWorks'])->where('id', '[0-9]+');
 
 Route::get('/admin/stamp_correction_request/list', [UserController::class, 'adminApplicationsList']);
 
 Route::get('/stamp_correction_request/approve', [UserController::class, 'applicationDetail']);
+
 
 
 

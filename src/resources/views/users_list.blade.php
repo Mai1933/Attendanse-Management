@@ -17,13 +17,15 @@
                         <th class="table_content">メールアドレス</th>
                         <th class="table_content">月次勤怠</th>
                     </tr>
-                    <tr class="table_contents">
-                        <td class="table_content-name">山田 太郎</td>
-                        <td class="table_content-time">bakibaki.y@email.com</td>
-                        <td class="table_detail">
-                            <a href="" class="detail_link">詳細</a>
-                        </td>
-                    </tr>
+                    @foreach ($users as $user)
+                        <tr class="table_contents">
+                            <td class="table_content-name">{{ $user->name }}</td>
+                            <td class="table_content-time">{{ $user->email }}</td>
+                            <td class="table_detail">
+                                <a href="/admin/attendance/staff/{{ $user->id }}" class="detail_link">詳細</a>
+                            </td>
+                        </tr>
+                    @endforeach
                 </table>
             </div>
         </div>

@@ -53,7 +53,7 @@
                                 value="{{ date('H:i', strtotime($work->start_time)) }}" name="work_start">
                             <p class="row_content-character">〜</p>
                             <input type="time" class="row_content-input"
-                                value="{{ date('H:i', strtotime($work->end_time)) }}" name="work_end">
+                                value="{{ $work->end_time ? date('H:i', strtotime($work->end_time)) : '' }}" name="work_end">
                         </div>
                     </div>
                 </div>
@@ -69,7 +69,8 @@
                                     name="break_start[{{ $index }}]">
                                 <p class="row_content-character">〜</p>
                                 <input type="time" class="row_content-input"
-                                    value="{{ date('H:i', strtotime($breaking->end_time)) }}" name="break_end[{{ $index }}]">
+                                    value="{{ $breaking->end_time ? date('H:i', strtotime($breaking->end_time)) : '' }}"
+                                    name="break_end[{{ $index }}]">
                             </div>
                         </div>
                     </div>
