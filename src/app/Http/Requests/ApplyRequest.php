@@ -25,9 +25,10 @@ class ApplyRequest extends FormRequest
             'year' => 'required',
             'date' => 'required',
             'work_start' => 'required',
-            'work_end' => 'required',
-            'break_start' => 'required',
-            'break_end' => 'required',
+            'work_end' => 'required|after:work_start',
+            'break_start.*' => 'nullable|after:work_start',
+            'break_end.*' => 'nullable|after:break_start.*|before:work_end',
+            'remarks' => 'required',
         ];
     }
     public function messages()
@@ -37,8 +38,11 @@ class ApplyRequest extends FormRequest
             'date.required' => '該当の日付を入力してください',
             'work_start.required' => '出勤時刻を入力してください',
             'work_end.required' => '退勤時刻を入力してください',
-            'break_start.required' => '休憩入時刻を入力してください',
-            'break_end.required' => '休憩戻時刻を入力してください',
+            'work_end.after' => '出勤時刻もしくは退勤時刻が不適切な値です',
+            'break_start.*.after' => '休憩時間が勤務時間外です',
+            'break_end.*.after' => '休憩入時刻もしくは休憩戻時刻が不適切な値です',
+            'break_end.*.before' => '休憩時間が勤務時間外です',
+            'remarks.required' => '備考を記入してください',
         ];
     }
 }

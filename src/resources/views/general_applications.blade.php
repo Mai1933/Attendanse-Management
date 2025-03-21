@@ -56,9 +56,10 @@
                                 <p class="table_content-small">{{ $completedWorking->status }}</p>
                                 <p class="table_content-small">{{ $user->name }}</p>
                                 <p class="table_content">
-                                    {{ date('Y/m/d', strtotime($completedOldWork[$completedWorking->work_id]->date)) }}</p>
+                                    {{ date('Y/m/d', strtotime($completedOldWork[$completedWorking->work_id]->date)) }}
+                                </p>
                                 <p class="table_content">{{ $completedWorking->remarks }}</p>
-                                <p class="table_content">{{ date('Y/m/d',strtotime($completedWorking->date))}}</p>
+                                <p class="table_content">{{ date('Y/m/d', strtotime($completedWorking->date))}}</p>
                                 <p class="table_content-small">
                                     <a href="" class="detail_link">詳細</a>
                                 </p>

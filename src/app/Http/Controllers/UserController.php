@@ -76,7 +76,119 @@ class UserController extends Controller
 
     public function adminList()
     {
-        return view('admin_attendance');
+        $date = date('Y/m/d');
+        $previousDate = new DateTime($date)->modify('-1 day')->format('Y-m-d');
+        $nextDate = new DateTime($date)->modify('+1 day')->format('Y-m-d');
+
+        $todaysWorks = Work::where('date', date('Y-m-d'))->get();
+        $user = [];
+        $totalBreakTimes = [];
+        $formattedBreakTimes = [];
+        $formattedWorkTimes = [];
+
+        foreach ($todaysWorks as $todaysWork) {
+            $user[$todaysWork->id] = GeneralUser::where('id', $todaysWork->user_id)->first();
+            $breakings = Breaking::where('work_id', $todaysWork->id)->get();
+
+            $totalBreakTime = 0;
+            foreach ($breakings as $breaking) {
+                if ($breaking->start_time && $breaking->end_time) {
+                    $startTime = strtotime($breaking->start_time);
+                    $endTime = strtotime($breaking->end_time);
+                    $totalBreakTime += ($endTime - $startTime);
+                }
+            }
+            $totalBreakTimes[$todaysWork->id] = $totalBreakTime;
+            $breakHours = floor($totalBreakTimes[$todaysWork->id] / 3600);
+            $breakMinutes = floor(($totalBreakTimes[$todaysWork->id] % 3600) / 60);
+            $formattedBreakTimes[$todaysWork->id] = sprintf('%2d:%02d', $breakHours, $breakMinutes);
+
+            $workStartTime = strtotime($todaysWork->start_time);
+            $workEndTime = strtotime($todaysWork->end_time);
+            $totalWorkTime = ($workEndTime - $workStartTime) - $totalBreakTimes[$todaysWork->id];
+            $workHours = floor($totalWorkTime / 3600);
+            $workMinutes = floor(($totalWorkTime % 3600) / 60);
+            $formattedWorkTimes[$todaysWork->id] = sprintf('%2d:%02d', $workHours, $workMinutes);
+        }
+
+        return view('admin_attendance', compact('date', 'previousDate', 'nextDate', 'user', 'todaysWorks', 'formattedBreakTimes', 'formattedWorkTimes'));
+    }
+
+    public function adminOtherDateList($date)
+    {
+        $previousDate = new DateTime($date)->modify('-1 day')->format('Y-m-d');
+        $nextDate = new DateTime($date)->modify('+1 day')->format('Y-m-d');
+
+        $todaysWorks = Work::where('date', $date)->get();
+        $user = [];
+        $totalBreakTimes = [];
+        $formattedBreakTimes = [];
+        $formattedWorkTimes = [];
+
+
+        foreach ($todaysWorks as $todaysWork) {
+            $user[$todaysWork->id] = GeneralUser::where('id', $todaysWork->user_id)->first();
+            $breakings = Breaking::where('work_id', $todaysWork->id)->get();
+
+            $totalBreakTime = 0;
+            foreach ($breakings as $breaking) {
+                if ($breaking->start_time && $breaking->end_time) {
+                    $startTime = strtotime($breaking->start_time);
+                    $endTime = strtotime($breaking->end_time);
+                    $totalBreakTime += ($endTime - $startTime);
+                }
+            }
+            $totalBreakTimes[$todaysWork->id] = $totalBreakTime;
+            $breakHours = floor($totalBreakTimes[$todaysWork->id] / 3600);
+            $breakMinutes = floor(($totalBreakTimes[$todaysWork->id] % 3600) / 60);
+            $formattedBreakTimes[$todaysWork->id] = sprintf('%2d:%02d', $breakHours, $breakMinutes);
+
+            $workStartTime = strtotime($todaysWork->start_time);
+            $workEndTime = strtotime($todaysWork->end_time);
+            $totalWorkTime = ($workEndTime - $workStartTime) - $totalBreakTimes[$todaysWork->id];
+            $workHours = floor($totalWorkTime / 3600);
+            $workMinutes = floor(($totalWorkTime % 3600) / 60);
+            $formattedWorkTimes[$todaysWork->id] = sprintf('%2d:%02d', $workHours, $workMinutes);
+        }
+
+        return view('admin_attendance', compact('date', 'previousDate', 'nextDate', 'user', 'todaysWorks', 'formattedBreakTimes', 'formattedWorkTimes'));
+    }
+
+    public function adminWorkDetail($id)
+    {
+        $work = Work::where('id', $id)->first();
+        $user = GeneralUser::where('id', $work->user_id)->first();
+        $year = Carbon::parse($work->date)->format('Y年');
+        $date = Carbon::parse($work->date)->format('n月j日');
+
+        $breakings = Breaking::where('work_id', $id)->get();
+        return view('admin_detail', compact('user', 'work', 'year', 'date', 'breakings'));
+    }
+
+    public function fix(ApplyRequest $request, $id)
+    {
+        $year = trim(str_replace('年', '', $request->year));
+        $date = trim(str_replace('月', '-', str_replace('日', '', $request->date)));
+        $applyDate = date('Y-m-d', strtotime($year . '-' . $date));
+
+        $work = Work::where('id', $id)->first();
+        $work->date = $applyDate;
+        $work->start_time = $request->work_start;
+        $work->end_time = $request->work_end;
+        $work->remarks = $request->remarks;
+        $work->save();
+
+        $date = date('Y-m-d',strtotime($work->date));
+
+        $breakings = Breaking::where('work_id', $id)->get();
+        foreach ( $breakings as $index => $breaking) {
+            if (isset($request->break_start[$index]) && isset($request->break_end[$index])) {
+                $breaking->start_time = $request->break_start[$index];
+                $breaking->end_time = $request->break_end[$index];
+                $breaking->save();
+            }
+        }
+        return redirect('/admin/attendance/list/' . $date);
     }
 
     public function usersList()
@@ -87,11 +199,6 @@ class UserController extends Controller
     public function individualWorks()
     {
         return view('users_attendance_list');
-    }
-
-    public function adminWorkDetail()
-    {
-        return view('admin_detail');
     }
 
     public function adminApplicationsList()
@@ -310,7 +417,6 @@ class UserController extends Controller
         // Log::info('Apply Date: ' . $applyDate);
 
         $workingApplication = new WorkingApplication();
-
         $workingApplication->user_id = $user->id;
         $workingApplication->work_id = $id;
         $workingApplication->date = $applyDate;
@@ -358,7 +464,7 @@ class UserController extends Controller
             $completedOldWork[$completedWorking->work_id] = Work::where('id', $completedWorking->work_id)->first();
         }
 
-        return view('general_applications', compact('user', 'waitingWorkings', 'waitingOldWork','completedWorkings','completedOldWork'));
+        return view('general_applications', compact('user', 'waitingWorkings', 'waitingOldWork', 'completedWorkings', 'completedOldWork'));
     }
 
 

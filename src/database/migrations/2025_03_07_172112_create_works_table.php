@@ -17,8 +17,6 @@ return new class extends Migration {
             $table->date('date');
             $table->time('start_time');
             $table->time('end_time')->nullable();
-            $table->time('fixed_start_time')->nullable();
-            $table->time('fixed_end_time')->nullable();
             $table->text('remarks')->nullable();
             $table->timestamps();
         });

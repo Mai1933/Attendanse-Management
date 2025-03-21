@@ -48,10 +48,10 @@
                     </div>
                     <div class="row_content">
                         <div class="row_content-inner">
-                            <input type="text" class="row_content-input"
+                            <input type="time" class="row_content-input"
                                 value="{{ date('H:i', strtotime($work->start_time)) }}" name="work_start">
                             <p class="row_content-character">〜</p>
-                            <input type="text" class="row_content-input"
+                            <input type="time" class="row_content-input"
                                 value="{{ date('H:i', strtotime($work->end_time)) }}" name="work_end">
                         </div>
                     </div>
@@ -63,11 +63,11 @@
                         </div>
                         <div class="row_content">
                             <div class="row_content-inner">
-                                <input type="text" class="row_content-input"
+                                <input type="time" class="row_content-input"
                                     value="{{ date('H:i', strtotime($breaking->start_time)) }}"
                                     name="break_start[{{ $index }}]">
                                 <p class="row_content-character">〜</p>
-                                <input type="text" class="row_content-input"
+                                <input type="time" class="row_content-input"
                                     value="{{ date('H:i', strtotime($breaking->end_time)) }}" name="break_end[{{ $index }}]">
                             </div>
                         </div>

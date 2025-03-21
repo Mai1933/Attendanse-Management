@@ -62,13 +62,17 @@ Route::get('/admin/login', [UserController::class, 'adminLogin'])->name('admin.l
 
 Route::post('/admin/login', [UserController::class, 'adminLoginStore']);
 
+Route::get('/admin/attendance/list/{date}', [UserController::class, 'adminOtherDateList']);
+
 Route::get('/admin/attendance/list', [UserController::class, 'adminList'])->name('admin.list');
 
 Route::get('/admin/staff/list', [UserController::class, 'usersList']);
 
-Route::get('/admin/attendance/staff/id', [UserController::class, 'individualWorks']);
+Route::get('/admin/attendance/{id}', [UserController::class, 'adminWorkDetail'])->where('id', '[0-9]+');
 
-Route::get('/admin/attendance/id', [UserController::class, 'adminWorkDetail']);
+Route::put('/admin/attendance/{id}', [UserController::class, 'fix'])->where('id', '[0-9]+');
+
+Route::get('/admin/attendance/staff/id', [UserController::class, 'individualWorks']);
 
 Route::get('/admin/stamp_correction_request/list', [UserController::class, 'adminApplicationsList']);
 
