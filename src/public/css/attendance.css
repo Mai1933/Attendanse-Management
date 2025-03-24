@@ -147,3 +147,20 @@ th:last-child {
 .detail_link {
     color: #000;
 }
+
+.export_button {
+    padding-top: 60px;
+    text-align: right;
+}
+
+.button-export {
+    border: 1px solid #000;
+    border-radius: 8px;
+    width: 184px;
+    height: 50px;
+    background-color: #000;
+    color: #FFF;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 3.3px;
+}

@@ -371,6 +371,75 @@ class UserController extends Controller
         return redirect('/admin/attendance/list/' . $date);
     }
 
+    public function csvExport(Request $request, $id)
+    {
+        $user = GeneralUser::where('id', $id)->first();
+        $month = $request->date;
+        $week = ['日', '月', '火', '水', '木', '金', '土'];
+
+        $workData = Work::where('user_id', $id)->get();
+        $works = $workData->filter(function ($item) use ($month) {
+            return strpos($item->date, $month) === 0;
+        })->values();
+
+        $csvOutput = "日付,出勤,退勤,休憩,合計\n";
+
+        $workDayOfWeek = [];
+        $formattedBreakTimes = [];
+        $formattedWorkTimes = [];
+        $totalBreakTimes = [];
+        $totalWorkTimes = [];
+
+        foreach ($works as $work) {
+            $date = date('m/d', strtotime($work->date));
+            $workDayOfWeek[$work->id] = $week[date('w', strtotime($work->date))];
+
+            $breakings = Breaking::where('work_id', $work->id)->get();
+            $totalBreakTime = 0;
+            foreach ($breakings as $breaking) {
+                if ($breaking->start_time && $breaking->end_time) {
+                    $startTime = strtotime($breaking->start_time);
+                    $endTime = strtotime($breaking->end_time);
+                    $totalBreakTime += ($endTime - $startTime);
+                }
+            }
+            $totalBreakTimes[$work->id] = $totalBreakTime;
+            $breakHours = floor($totalBreakTimes[$work->id] / 3600);
+            $breakMinutes = floor(($totalBreakTimes[$work->id] % 3600) / 60);
+            $formattedBreakTimes[$work->id] = sprintf('%2d:%02d', $breakHours, $breakMinutes);
+
+            if ($work->start_time && $work->end_time) {
+                $workStartTime = strtotime($work->start_time);
+                $workEndTime = strtotime($work->end_time);
+                $totalWorkTime = ($workEndTime - $workStartTime) - $totalBreakTimes[$work->id];
+                $workHours = floor($totalWorkTime / 3600);
+                $workMinutes = floor(($totalWorkTime % 3600) / 60);
+                $formattedWorkTimes[$work->id] = sprintf('%2d:%02d', $workHours, $workMinutes);
+                $workStartTime = date('H:i', strtotime($work->start_time));
+                $workEndTime = date('H:i', strtotime($work->end_time));
+            } else {
+                $formattedWorkTimes[$work->id] = '';
+                $workStartTime = '';
+                $workEndTime = '';
+            }
+            $csvOutput .= "{$date}({$workDayOfWeek[$work->id]}),{$workStartTime},{$workEndTime},{$formattedBreakTimes[$work->id]},{$formattedWorkTimes[$work->id]}\n";
+        }
+
+        $fileName = "attendance_" . $user->name . $month . ".csv";
+
+        return response()->stream(
+            function () use ($csvOutput) {
+                echo $csvOutput;
+            },
+            200,
+            [
+                "Content-Type" => "text/csv",
+                "Content-Disposition" => "attachment; filename=\"$fileName\"",
+            ]
+        );
+    }
+
+    //一般ユーザー
     public function generalLogin()
     {
         return view('general_login');
@@ -610,11 +679,6 @@ class UserController extends Controller
 
         return redirect('/attendance/list');
     }
-
-    // public function checkWait()
-    // {
-    //     return view('general_detail-wait');
-    // }
 
     public function applicationsList()
     {

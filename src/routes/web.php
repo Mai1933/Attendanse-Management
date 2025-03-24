@@ -85,6 +85,8 @@ Route::get('/stamp_correction_request/approve/{id}', [UserController::class, 'ap
 
 Route::put('/stamp_correction_request/approve/{id}', [UserController::class, 'approve'])->where('id', '[0-9]+');
 
+Route::post('/export/{id}', [UserController::class, 'csvExport'])->where('id', '[0-9]+');
+
 
 
 

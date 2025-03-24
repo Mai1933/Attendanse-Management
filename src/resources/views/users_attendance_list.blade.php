@@ -10,13 +10,15 @@
             <div class="ttl">
                 <h2 class="ttl_content">{{ $user->name }}さんの勤怠</h2>
             </div>
-            <div class="information">
+            <form class="information" action="/export/{{ $user->id }}" method="post">
+                @csrf
                 <div class="information_data">
                     <a href="/admin/attendance/staff/{{ $user->id }}/{{ $previousMonth }}" class="data_link">
                         <img src="{{ asset('storage/proceed.png') }}" alt="proceed" class="data_link-img">
                         <p class="data_link-character">前月</p>
                     </a>
                     <div class="data_content">
+                        <input type="hidden" value="{{ date('Y-m', strtotime($date)) }}" name="date">
                         <img src="{{ asset('storage/calender.png') }}" alt="calender" class="data_content-img">
                         <p class="data_link-character">{{ date('Y/m', strtotime($date)) }}</p>
                     </div>
@@ -46,15 +48,22 @@
                             <td class="table_content-time">
                                 {{ $work->end_time ? date('H:i', strtotime($work->end_time)) : '' }}
                             </td>
-                            <td class="table_content-time">{{ $formattedBreakTimes[$work->id] }}</td>
-                            <td class="table_content-time">{{ $formattedWorkTimes[$work->id] }}</td>
+                            <td class="table_content-time">
+                                {{ $formattedBreakTimes[$work->id] }}
+                            </td>
+                            <td class="table_content-time">
+                                {{ $formattedWorkTimes[$work->id] }}
+                            </td>
                             <td class="table_detail">
                                 <a href="/admin/attendance/{{ $work->id }}" class="detail_link">詳細</a>
                             </td>
                         </tr>
                     @endforeach
                 </table>
-            </div>
+                <div class="export_button">
+                    <button type="submit" class="button-export">CSV出力</button>
+                </div>
+            </form>
         </div>
     </div>
 @endsection
