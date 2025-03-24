@@ -17,7 +17,7 @@
                         <p class="works_error_message">{{$errors->first('attendance')}}</p>
                     </span>
                 @enderror
-                <p class="works_date">{{ $date }}({{ $dayOfWeek }})</p>
+                <p class="works_date">{{ date('Y年n月j日', strtotime($date)) }}({{ $dayOfWeek }})</p>
                 <div class="works_time">
                     <p class="works_time-content">{{ $time }}</p>
                 </div>

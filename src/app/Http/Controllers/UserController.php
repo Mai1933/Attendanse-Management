@@ -333,9 +333,42 @@ class UserController extends Controller
         return view('admin_applications', compact('user', 'waitingWorkings', 'waitingOldWork', 'completedWorkings', 'completedOldWork'));
     }
 
-    public function applicationDetail()
+    public function applicationDetail($id)
     {
-        return view('approve');
+        $application = WorkingApplication::where('id', $id)->first();
+        $user = GeneralUser::where('id', $application->user_id)->first();
+        $breakingApplications = BreakingApplication::where('work_id', $application->work_id)->get();
+        return view('approve', compact('application', 'user', 'breakingApplications'));
+    }
+
+    public function approve(Request $request, $id)
+    {
+        $year = trim(str_replace('年', '', $request->year));
+        $date = trim(str_replace('月', '-', str_replace('日', '', $request->date)));
+        $applyDate = date('Y-m-d', strtotime($year . '-' . $date));
+
+        $work = Work::where('id', $id)->first();
+        $work->date = $applyDate;
+        $work->start_time = $request->work_start;
+        $work->end_time = $request->work_end;
+        $work->remarks = $request->remarks;
+        $work->save();
+
+        $application = WorkingApplication::where('work_id', $id)->first();
+        $application->status = '承認済み';
+        $application->save();
+
+        $date = date('Y-m-d', strtotime($work->date));
+
+        $breakings = Breaking::where('work_id', $id)->get();
+        foreach ($breakings as $index => $breaking) {
+            if (isset($request->break_start[$index]) && isset($request->break_end[$index])) {
+                $breaking->start_time = $request->break_start[$index];
+                $breaking->end_time = $request->break_end[$index];
+                $breaking->save();
+            }
+        }
+        return redirect('/admin/attendance/list/' . $date);
     }
 
     public function generalLogin()

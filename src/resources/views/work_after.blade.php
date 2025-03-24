@@ -12,7 +12,7 @@
                 <div class="works_status">
                     <p class="works_status-content">出勤中</p>
                 </div>
-                <p class="works_date">{{ $date }}({{ $dayOfWeek }})</p>
+                <p class="works_date">{{ date('Y年n月j日', strtotime($date)) }}({{ $dayOfWeek }})</p>
                 <div class="works_time">
                     <p class="works_time-content">{{ $time }}</p>
                 </div>

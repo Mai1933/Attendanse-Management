@@ -46,21 +46,41 @@ class TimeController extends Controller
     public function attendance()
     {
         $user = Auth::user();
-        if (!$user) {
-            Log::info('Authにおいてログインに失敗しました');
-        } else {
-            Log::info('ユーザーが認証されました: ' . $user->email);
-        }
-        $date = date('Y年m月d日');
+        $date = date('Y-m-d');
         $week = ['日', '月', '火', '水', '木', '金', '土'];
         $dayOfWeek = $week[date('w')];
         $time = date('H:i');
 
-        session(['date' => $date]);
-        session(['dayOfWeek' => $dayOfWeek]);
-        session(['time' => $time]);
+        $work = Work::where('date', $date)->where('user_id', $user->id)->first();
+        Log::info('Work data:', ['work' => $work]);
+        if (!$work) {
+            return view('work_before', compact('date', 'dayOfWeek', 'time'));
+        }
 
-        return view('work_before', compact('date', 'dayOfWeek', 'time'));
+        $breaks = Breaking::where('work_id', $work->id)->get();
+        $firstBreak = $breaks->first();
+        $lastBreak = $breaks->last();
+
+        if ($work->start_time !== null) {
+            if (
+                $firstBreak === null &&
+                $work->end_time === null
+            ) {
+                return view('work_after', compact('date', 'dayOfWeek', 'time'));
+            } elseif (
+                $lastBreak->start_time !== null &&
+                $lastBreak->end_time === null &&
+                $work->end_time === null
+            ) {
+                return view('work_break', compact('date', 'dayOfWeek', 'time'));
+            } elseif (
+                $lastBreak->start_time !== null &&
+                $lastBreak->end_time !== null &&
+                $work->end_time === null
+            ) {
+                return view('work_after', compact('date', 'dayOfWeek', 'time'));
+            }
+        }
     }
 
     public function attendanceStore()
@@ -70,9 +90,10 @@ class TimeController extends Controller
             Log::info('Authにおいてログインに失敗しました');
         }
 
-        $date = session('date');
-        $dayOfWeek = session('dayOfWeek');
-        $time = session('time');
+        $date = date('Y-m-d');
+        $week = ['日', '月', '火', '水', '木', '金', '土'];
+        $dayOfWeek = $week[date('w')];
+        $time = date('H:i');
 
         $workData = Work::where('user_id', $user->id)->get();
         $today = date('Y-m-d');
@@ -108,9 +129,10 @@ class TimeController extends Controller
             Log::info('Authにおいてログインに失敗しました');
         }
 
-        $date = session('date');
-        $dayOfWeek = session('dayOfWeek');
-        $time = session('time');
+        $date = date('Y-m-d');
+        $week = ['日', '月', '火', '水', '木', '金', '土'];
+        $dayOfWeek = $week[date('w')];
+        $time = date('H:i');
 
         $workData = Work::where('user_id', $user->id)->get();
         $today = date('Y-m-d');
@@ -140,9 +162,10 @@ class TimeController extends Controller
             Log::info('Authにおいてログインに失敗しました');
         }
 
-        $date = session('date');
-        $dayOfWeek = session('dayOfWeek');
-        $time = session('time');
+        $date = date('Y-m-d');
+        $week = ['日', '月', '火', '水', '木', '金', '土'];
+        $dayOfWeek = $week[date('w')];
+        $time = date('H:i');
 
         $breakingData = Breaking::where('user_id', $user->id)->get();
         $breaking = $breakingData->filter(function ($item) {
@@ -161,9 +184,10 @@ class TimeController extends Controller
             Log::info('Authにおいてログインに失敗しました');
         }
 
-        $date = session('date');
-        $dayOfWeek = session('dayOfWeek');
-        $time = session('time');
+        $date = date('Y-m-d');
+        $week = ['日', '月', '火', '水', '木', '金', '土'];
+        $dayOfWeek = $week[date('w')];
+        $time = date('H:i');
 
         $workData = Work::where('user_id', $user->id)->get();
         $today = date('Y-m-d');

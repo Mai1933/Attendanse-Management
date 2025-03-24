@@ -75,12 +75,13 @@ Route::put('/admin/attendance/{id}', [UserController::class, 'fix'])->where('id'
 
 Route::get('/admin/attendance/staff/{id}', [UserController::class, 'individualWorks'])->where('id', '[0-9]+');
 
-Route::get('/admin/attendance/staff/{id}/{date}', [UserController::class, 'individualOtherMonthWorks'])->where('id', '[0-9]+');
+Route::get('/admin/attendance/staff/{id}/{date}', [UserController::class, 'individualOtherMonthWorks'])->where('id', '[0-9]+')->where('date', '^\d{4}-\d{2}-\d{2}$');
 
 Route::get('/admin/stamp_correction_request/list', [UserController::class, 'adminApplicationsList']);
 
-Route::get('/stamp_correction_request/approve', [UserController::class, 'applicationDetail']);
+Route::get('/stamp_correction_request/approve/{id}', [UserController::class, 'applicationDetail'])->where('id', '[0-9]+');
 
+Route::put('/stamp_correction_request/approve/{id}', [UserController::class, 'approve'])->where('id', '[0-9]+');
 
 
 
