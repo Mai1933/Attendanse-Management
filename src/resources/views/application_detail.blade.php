@@ -100,7 +100,7 @@
                         </div>
                     </div>
                 </div>
-                @if ($application === null)
+                @if ($work->status === '承認済み')
                     <div class="information_button">
                         <button type="submit" class="button-submit">修正</button>
                     </div>

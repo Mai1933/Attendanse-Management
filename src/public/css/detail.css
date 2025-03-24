@@ -166,6 +166,18 @@
     padding: 10px 40px;
 }
 
+.information_caution {
+    text-align: right;
+    padding-top: 22px;
+}
+
+.caution-content {
+    color: rgba(255, 0, 0, 0.50);
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 2.7px;
+}
+
 /* Responsive style */
 @media screen and (max-width: 860px) {
     .ttl_content {

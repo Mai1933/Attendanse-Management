@@ -35,7 +35,8 @@
                                 <p class="table_content">{{ $waitingWorking->remarks }}</p>
                                 <p class="table_content">{{ date('Y/m/d', strtotime($waitingWorking->date)) }}</p>
                                 <p class="table_content-small">
-                                    <a href="" class="detail_link">詳細</a>
+                                    <a href="/stamp_correction_request/detail/{{ $waitingWorking->id }}"
+                                        class="detail_link">詳細</a>
                                 </p>
                             </div>
                         @endforeach
@@ -61,7 +62,8 @@
                                 <p class="table_content">{{ $completedWorking->remarks }}</p>
                                 <p class="table_content">{{ date('Y/m/d', strtotime($completedWorking->date))}}</p>
                                 <p class="table_content-small">
-                                    <a href="" class="detail_link">詳細</a>
+                                    <a href="/stamp_correction_request/detail/{{ $completedWorking->id }}"
+                                        class="detail_link">詳細</a>
                                 </p>
                             </div>
                         @endforeach

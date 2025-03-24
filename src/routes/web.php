@@ -43,9 +43,11 @@ Route::get('/attendance/{id}', [UserController::class, 'generalWorkDetail'])->wh
 
 Route::post('/attendance/{id}', [UserController::class, 'apply'])->where('id', '[0-9]+');
 
-Route::get('/wait', [UserController::class, 'checkWait']);
+// Route::get('/wait', [UserController::class, 'checkWait']);
 
 Route::get('/stamp_correction_request/list', [UserController::class, 'applicationsList']);
+
+Route::get('/stamp_correction_request/detail/{id}', [UserController::class, 'applicationsDetail']);
 
 Route::get('/attendance', [TimeController::class, 'attendance']);
 
@@ -82,6 +84,7 @@ Route::get('/admin/stamp_correction_request/list', [UserController::class, 'admi
 Route::get('/stamp_correction_request/approve/{id}', [UserController::class, 'applicationDetail'])->where('id', '[0-9]+');
 
 Route::put('/stamp_correction_request/approve/{id}', [UserController::class, 'approve'])->where('id', '[0-9]+');
+
 
 
 

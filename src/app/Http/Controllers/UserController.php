@@ -565,11 +565,12 @@ class UserController extends Controller
     {
         $user = Auth::user();
         $work = Work::where('id', $id)->first();
+        $application = WorkingApplication::where('work_id', $id)->where('status', '承認待ち')->first();
         $year = Carbon::parse($work->date)->format('Y年');
         $date = Carbon::parse($work->date)->format('n月j日');
 
         $breakings = Breaking::where('work_id', $id)->get();
-        return view('general_detail', compact('user', 'work', 'year', 'date', 'breakings'));
+        return view('general_detail', compact('user', 'work', 'application', 'year', 'date', 'breakings'));
     }
 
     public function apply(ApplyRequest $request, $id)
@@ -610,10 +611,10 @@ class UserController extends Controller
         return redirect('/attendance/list');
     }
 
-    public function checkWait()
-    {
-        return view('general_detail-wait');
-    }
+    // public function checkWait()
+    // {
+    //     return view('general_detail-wait');
+    // }
 
     public function applicationsList()
     {
@@ -635,5 +636,13 @@ class UserController extends Controller
         return view('general_applications', compact('user', 'waitingWorkings', 'waitingOldWork', 'completedWorkings', 'completedOldWork'));
     }
 
-
+    public function applicationsDetail($id)
+    {
+        $work = WorkingApplication::where('id', $id)->first();
+        $user = Auth::user();
+        $breakings = BreakingApplication::where('work_id', $work->work_id)->get();
+        $year = Carbon::parse($work->date)->format('Y年');
+        $date = Carbon::parse($work->date)->format('n月j日');
+        return view('application_detail', compact('user', 'year', 'date', 'work', 'breakings'));
+    }
 }
