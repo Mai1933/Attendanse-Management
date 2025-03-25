@@ -269,8 +269,7 @@ class UserController extends Controller
         $workData = Work::where('user_id', $id)->get();
         $works = $workData->filter(function ($item) use ($month) {
             return strpos($item->date, $month) === 0;
-        })->values();
-        Log::info('Works: ' . $works);
+        })->sortBy('date')->values();
 
         $workDayOfWeek = [];
         $formattedBreakTimes = [];
@@ -329,7 +328,7 @@ class UserController extends Controller
         $workData = Work::where('user_id', $id)->get();
         $works = $workData->filter(function ($item) use ($month) {
             return strpos($item->date, $month) === 0;
-        })->values();
+        })->sortBy('date')->values();
 
         $workDayOfWeek = [];
         $formattedBreakTimes = [];
@@ -586,7 +585,7 @@ class UserController extends Controller
         $todayMonth = date('Y-m');
         $works = $workData->filter(function ($item) use ($todayMonth) {
             return strpos($item->date, $todayMonth) === 0;
-        })->values();
+        })->sortBy('date')->values();
 
         $workDayOfWeek = [];
         $formattedBreakTimes = [];
@@ -632,20 +631,20 @@ class UserController extends Controller
         if (!$user) {
             return redirect()->route('login')->withErrors(['login' => 'ユーザーが認証されていません。']);
         }
-        $month = $month;
+        $monthData = $month;
         $year = $year;
-        $previousMonth = (new DateTime($month . '/01'))->modify('-1 month')->format('m');
-        $nextMonth = (new DateTime($month . '/01'))->modify('+1 month')->format('m');
+        $previousMonth = (new DateTime($monthData . '/01'))->modify('-1 month')->format('m');
+        $nextMonth = (new DateTime($monthData . '/01'))->modify('+1 month')->format('m');
         $week = ['日', '月', '火', '水', '木', '金', '土'];
         $dayOfWeek = $week[date('w')];
         $date = date('m/d');
 
         $workData = Work::where('user_id', $user->id)->get();
-        $monthString = $year . '-' . $month;
+        $monthString = $year . '-' . $monthData;
         // $todayMonth = date('Y-m');
         $works = $workData->filter(function ($item) use ($monthString) {
             return strpos($item->date, $monthString) === 0;
-        })->values();
+        })->sortBy('date')->values();
 
         $workDayOfWeek = [];
         $formattedBreakTimes = [];
@@ -682,6 +681,7 @@ class UserController extends Controller
             }
         }
 
+        $month = $year . '/' . $monthData;
         return view('general_attendance', compact('month', 'year', 'previousMonth', 'nextMonth', 'dayOfWeek', 'date', 'works', 'workDayOfWeek', 'formattedBreakTimes', 'formattedWorkTimes'));
     }
 
