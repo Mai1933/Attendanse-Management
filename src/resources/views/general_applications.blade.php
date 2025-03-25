@@ -28,7 +28,7 @@
                         @foreach ($waitingWorkings as $waitingWorking)
                             <div class="content_information">
                                 <p class="table_content-small">{{ $waitingWorking->status }}</p>
-                                <p class="table_content-small">{{ $user->name }}</p>
+                                <p class="table_content-small">{{ $user[$waitingWorking->work_id]->name }}</p>
                                 <p class="table_content">
                                     {{ date('Y/m/d', strtotime($waitingOldWork[$waitingWorking->work_id]->date)) }}
                                 </p>
@@ -55,7 +55,7 @@
                         @foreach ($completedWorkings as $completedWorking)
                             <div class="content_information">
                                 <p class="table_content-small">{{ $completedWorking->status }}</p>
-                                <p class="table_content-small">{{ $user->name }}</p>
+                                <p class="table_content-small">{{ $user[$completedWorking->work_id]->name }}</p>
                                 <p class="table_content">
                                     {{ date('Y/m/d', strtotime($completedOldWork[$completedWorking->work_id]->date)) }}
                                 </p>

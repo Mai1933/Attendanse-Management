@@ -14,21 +14,21 @@ class BreakingApplicationsTableSeeder extends Seeder
     public function run(): void
     {
         $param = [
-            'user_id' => 1,
+            'user_id' => 2,
             'work_id' => 1,
             'start_time' => '12:00:00',
             'end_time' => '13:00:00',
         ];
         DB::table('breaking_applications')->insert($param);
         $param = [
-            'user_id' => 1,
+            'user_id' => 2,
             'work_id' => 1,
             'start_time' => '14:00:00',
             'end_time' => '14:35:00',
         ];
         DB::table('breaking_applications')->insert($param);
         $param = [
-            'user_id' => 1,
+            'user_id' => 2,
             'work_id' => 7,
             'start_time' => '12:00:00',
             'end_time' => '13:00:00',

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('breakings', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->foreign('user_id')->references('id')->on('general_users');
+            $table->foreign('user_id')->references('id')->on('users');
             $table->unsignedBigInteger('work_id');
             $table->foreign('work_id')->references('id')->on('works');
             $table->time('start_time');

@@ -13,7 +13,7 @@ return new class extends Migration {
         Schema::create('works', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->foreign('user_id')->references('id')->on('general_users');
+            $table->foreign('user_id')->references('id')->on('users');
             $table->date('date');
             $table->time('start_time');
             $table->time('end_time')->nullable();

@@ -3,7 +3,7 @@
 namespace App\Providers;
 
 use App\Actions\Fortify\CreateNewUser;
-use App\Models\GeneralUser;
+use App\Models\User;
 use App\Actions\Fortify\ResetUserPassword;
 use App\Actions\Fortify\UpdateUserPassword;
 use App\Actions\Fortify\UpdateUserProfileInformation;
@@ -60,7 +60,7 @@ class FortifyServiceProvider extends ServiceProvider
         });
 
         Fortify::authenticateUsing(function (LoginRequest $request) {
-            $user = GeneralUser::where('email', $request->email)->first();
+            $user = User::where('email', $request->email)->first();
 
             if (
                 $user &&

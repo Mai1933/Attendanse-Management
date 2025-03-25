@@ -84,9 +84,15 @@
                         </div>
                     </div>
                 </div>
-                <div class="information_button">
-                    <button type="submit" class="button-submit">承認</button>
-                </div>
+                @if ($application->status === '承認済み')
+                    <div class="information_caution">
+                        <p class="caution-content"></p>
+                    </div>
+                @else
+                    <div class="information_button">
+                        <button type="submit" class="button-submit">承認</button>
+                    </div>
+                @endif
             </form>
         </div>
     </div>

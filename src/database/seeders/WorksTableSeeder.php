@@ -14,7 +14,7 @@ class WorksTableSeeder extends Seeder
      */
     public function run(): void
     {
-        $user_ids = [1, 2, 3, 4, 5, 6];
+        $user_ids = [2, 3, 4, 5, 6, 7];
 
         foreach ($user_ids as $user_id) {
             $param = [
@@ -29,7 +29,7 @@ class WorksTableSeeder extends Seeder
         $dates = [20250311, 20250312, 20250313, 20250314, 20250315, 20250316, 20250416, 20250417,];
         foreach ($dates as $date) {
             $param = [
-                'user_id' => 1,
+                'user_id' => 2,
                 'date' => $date,
                 'start_time' => '07:00:00',
                 'end_time' => '18:24:00',

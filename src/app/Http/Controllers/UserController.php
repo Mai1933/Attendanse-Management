@@ -16,8 +16,7 @@ use Laravel\Fortify\Contracts\CreatesNewUsers;
 use Laravel\Fortify\Contracts\RegisterViewResponse;
 use Laravel\Fortify\Fortify;
 use App\Actions\Fortify\CreateNewUser;
-use App\Models\GeneralUser;
-use App\Models\AdminUser;
+use App\Models\User;
 use App\Models\Work;
 use App\Models\Breaking;
 use App\Models\BreakingApplication;
@@ -28,7 +27,6 @@ use App\Models\Comment;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Item;
 use App\Models\Category;
-use App\Models\User;
 use App\Models\Purchase;
 use App\Http\Requests\AddressRequest;
 use App\Http\Requests\ProfileRequest;
@@ -56,26 +54,44 @@ class UserController extends Controller
 
     public function adminLoginStore(LoginRequest $request)
     {
-        $user = AdminUser::where('email', $request->email)->first();
-        if (!$user) {
-            return redirect()->route('admin.login')->withErrors(['adminLogin' => 'ログイン情報が登録されていません']);
-        }
+        // $user = User::where('email', $request->email)->where('role','admin')->first();
+        // if (!$user) {
+        //     return redirect()->route('admin.login')->withErrors(['adminLogin' => 'ログイン情報が登録されていません']);
+        // }
 
-        if (!Hash::check($request->password, $user->password)) {
-            return redirect()->route('admin.login')->withErrors(['adminLogin' => 'パスワードが間違っています']);
-        }
+        // if (!Hash::check($request->password, $user->password)) {
+        //     return redirect()->route('admin.login')->withErrors(['adminLogin' => 'パスワードが間違っています']);
+        // }
 
         // if ($user && !$user->hasVerifiedEmail()) {
         //     return redirect()->route('login')->withErrors(['login' => 'メール認証が必要です。メールを確認してください。']);
         // }
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+            $user = Auth::user();
 
-        $this->loginPipeline($request);
+            if ($user->role !== 'admin') {
+                Auth::logout();
+                return redirect('/login')->withErrors(['login' => '管理者以外はログインできません。']);
+            }
+            return $this->loginPipeline($request)->then(function ($request) {
+                return redirect()->route('admin.list');
+            });
+        }
 
-        return redirect()->route('admin.list');
+        return redirect()->route('login')->withErrors(['login' => 'ログイン情報が間違っています']);
+
     }
 
     public function adminList()
     {
+        $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('login')->withErrors(['login' => 'ユーザーが認証されていません。']);
+        }
+        if ($user->role !== 'admin') {
+            Auth::logout();
+            return redirect('/login')->withErrors(['login' => '管理者以外はログインできません。']);
+        }
         $date = date('Y/m/d');
         $previousDate = new DateTime($date)->modify('-1 day')->format('Y-m-d');
         $nextDate = new DateTime($date)->modify('+1 day')->format('Y-m-d');
@@ -87,7 +103,7 @@ class UserController extends Controller
         $formattedWorkTimes = [];
 
         foreach ($todaysWorks as $todaysWork) {
-            $user[$todaysWork->id] = GeneralUser::where('id', $todaysWork->user_id)->first();
+            $user[$todaysWork->id] = User::where('id', $todaysWork->user_id)->first();
             $breakings = Breaking::where('work_id', $todaysWork->id)->get();
 
             $totalBreakTime = 0;
@@ -125,6 +141,14 @@ class UserController extends Controller
 
     public function adminOtherDateList($date)
     {
+        $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('login')->withErrors(['login' => 'ユーザーが認証されていません。']);
+        }
+        if ($user->role !== 'admin') {
+            Auth::logout();
+            return redirect('/login')->withErrors(['login' => '管理者以外は閲覧できません。']);
+        }
         $previousDate = new DateTime($date)->modify('-1 day')->format('Y-m-d');
         $nextDate = new DateTime($date)->modify('+1 day')->format('Y-m-d');
 
@@ -136,7 +160,7 @@ class UserController extends Controller
 
 
         foreach ($todaysWorks as $todaysWork) {
-            $user[$todaysWork->id] = GeneralUser::where('id', $todaysWork->user_id)->first();
+            $user[$todaysWork->id] = User::where('id', $todaysWork->user_id)->first();
             $breakings = Breaking::where('work_id', $todaysWork->id)->get();
 
             $totalBreakTime = 0;
@@ -169,8 +193,16 @@ class UserController extends Controller
 
     public function adminWorkDetail($id)
     {
+        $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('login')->withErrors(['login' => 'ユーザーが認証されていません。']);
+        }
+        if ($user->role !== 'admin') {
+            Auth::logout();
+            return redirect('/login')->withErrors(['login' => '管理者以外は閲覧できません。']);
+        }
         $work = Work::where('id', $id)->first();
-        $user = GeneralUser::where('id', $work->user_id)->first();
+        $user = User::where('id', $work->user_id)->first();
         $year = Carbon::parse($work->date)->format('Y年');
         $date = Carbon::parse($work->date)->format('n月j日');
 
@@ -180,6 +212,14 @@ class UserController extends Controller
 
     public function fix(ApplyRequest $request, $id)
     {
+        $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('login')->withErrors(['login' => 'ユーザーが認証されていません。']);
+        }
+        if ($user->role !== 'admin') {
+            Auth::logout();
+            return redirect('/login')->withErrors(['login' => '管理者以外は閲覧できません。']);
+        }
         $year = trim(str_replace('年', '', $request->year));
         $date = trim(str_replace('月', '-', str_replace('日', '', $request->date)));
         $applyDate = date('Y-m-d', strtotime($year . '-' . $date));
@@ -206,13 +246,29 @@ class UserController extends Controller
 
     public function usersList()
     {
-        $users = GeneralUser::all();
+        $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('login')->withErrors(['login' => 'ユーザーが認証されていません。']);
+        }
+        if ($user->role !== 'admin') {
+            Auth::logout();
+            return redirect('/login')->withErrors(['login' => '管理者以外は閲覧できません。']);
+        }
+        $users = User::where('role', null)->get();
         return view('users_list', compact('users'));
     }
 
     public function individualWorks($id)
     {
-        $user = GeneralUser::where('id', $id)->first();
+        $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('login')->withErrors(['login' => 'ユーザーが認証されていません。']);
+        }
+        if ($user->role !== 'admin') {
+            Auth::logout();
+            return redirect('/login')->withErrors(['login' => '管理者以外は閲覧できません。']);
+        }
+        $user = User::where('id', $id)->first();
         $month = date('Y-m');
         $date = date('Y/m/d');
         $previousMonth = (new DateTime($month . '-01'))->modify('-1 month')->format('Y-m-d');
@@ -265,7 +321,15 @@ class UserController extends Controller
 
     public function individualOtherMonthWorks($id, $date)
     {
-        $user = GeneralUser::where('id', $id)->first();
+        $userData = Auth::user();
+        if (!$userData) {
+            return redirect()->route('login')->withErrors(['login' => 'ユーザーが認証されていません。']);
+        }
+        if ($userData->role !== 'admin') {
+            Auth::logout();
+            return redirect('/login')->withErrors(['login' => '管理者以外は閲覧できません。']);
+        }
+        $user = User::where('id', $id)->first();
         $month = date('Y-m', strtotime($date));
         $previousMonth = (new DateTime($month . '-01'))->modify('-1 month')->format('Y-m-d');
         $nextMonth = (new DateTime($month . '-01'))->modify('+1 month')->format('Y-m-d');
@@ -314,35 +378,51 @@ class UserController extends Controller
         return view('users_attendance_list', compact('user', 'date', 'previousMonth', 'nextMonth', 'works', 'workDayOfWeek', 'formattedBreakTimes', 'formattedWorkTimes'));
     }
 
-    public function adminApplicationsList()
-    {
-        $waitingWorkings = WorkingApplication::where('status', '承認待ち')->get();
+    // public function adminApplicationsList()
+    // {
+    //     $waitingWorkings = WorkingApplication::where('status', '承認待ち')->get();
 
-        $waitingOldWork = [];
-        foreach ($waitingWorkings as $waitingWorking) {
-            $waitingOldWork[$waitingWorking->work_id] = Work::where('id', $waitingWorking->work_id)->first();
-            $user[$waitingWorking->work_id] = GeneralUser::where('id', $waitingOldWork[$waitingWorking->work_id]->user_id)->first();
-        }
+    //     $waitingOldWork = [];
+    //     foreach ($waitingWorkings as $waitingWorking) {
+    //         $waitingOldWork[$waitingWorking->work_id] = Work::where('id', $waitingWorking->work_id)->first();
+    //         $user[$waitingWorking->work_id] = User::where('id', $waitingOldWork[$waitingWorking->work_id]->user_id)->first();
+    //     }
 
-        $completedWorkings = WorkingApplication::where('status', '承認済み')->get();
-        $completedOldWork = [];
-        foreach ($completedWorkings as $completedWorking) {
-            $completedOldWork[$completedWorking->work_id] = Work::where('id', $completedWorking->work_id)->first();
-            $user[$completedWorking->work_id] = GeneralUser::where('id', $completedOldWork[$completedWorking->work_id]->user_id)->first();
-        }
-        return view('admin_applications', compact('user', 'waitingWorkings', 'waitingOldWork', 'completedWorkings', 'completedOldWork'));
-    }
+    //     $completedWorkings = WorkingApplication::where('status', '承認済み')->get();
+    //     $completedOldWork = [];
+    //     foreach ($completedWorkings as $completedWorking) {
+    //         $completedOldWork[$completedWorking->work_id] = Work::where('id', $completedWorking->work_id)->first();
+    //         $user[$completedWorking->work_id] = User::where('id', $completedOldWork[$completedWorking->work_id]->user_id)->first();
+    //     }
+    //     return view('admin_applications', compact('user', 'waitingWorkings', 'waitingOldWork', 'completedWorkings', 'completedOldWork'));
+    // }
 
     public function applicationDetail($id)
     {
+        $userData = Auth::user();
+        if (!$userData) {
+            return redirect()->route('login')->withErrors(['login' => 'ユーザーが認証されていません。']);
+        }
+        if ($userData->role !== 'admin') {
+            Auth::logout();
+            return redirect('/login')->withErrors(['login' => '管理者以外は閲覧できません。']);
+        }
         $application = WorkingApplication::where('id', $id)->first();
-        $user = GeneralUser::where('id', $application->user_id)->first();
+        $user = User::where('id', $application->user_id)->first();
         $breakingApplications = BreakingApplication::where('work_id', $application->work_id)->get();
         return view('approve', compact('application', 'user', 'breakingApplications'));
     }
 
     public function approve(Request $request, $id)
     {
+        $userData = Auth::user();
+        if (!$userData) {
+            return redirect()->route('login')->withErrors(['login' => 'ユーザーが認証されていません。']);
+        }
+        if ($userData->role !== 'admin') {
+            Auth::logout();
+            return redirect('/login')->withErrors(['login' => '管理者以外は閲覧できません。']);
+        }
         $year = trim(str_replace('年', '', $request->year));
         $date = trim(str_replace('月', '-', str_replace('日', '', $request->date)));
         $applyDate = date('Y-m-d', strtotime($year . '-' . $date));
@@ -373,7 +453,7 @@ class UserController extends Controller
 
     public function csvExport(Request $request, $id)
     {
-        $user = GeneralUser::where('id', $id)->first();
+        $user = User::where('id', $id)->first();
         $month = $request->date;
         $week = ['日', '月', '火', '水', '木', '金', '土'];
 
@@ -447,22 +527,13 @@ class UserController extends Controller
 
     public function loginStore(LoginRequest $request)
     {
-        // Log::info('ログイン試行: ' . $request->email);
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
-            // Log::info('ログイン成功: ' . $request->email);
             return $this->loginPipeline($request)->then(function ($request) {
-                // Log::info('ログインパイプライン成功: ' . $request->email);
                 return app(LoginResponse::class);
             });
-            // return redirect()->intended('/attendance');
         }
 
-        // Log::warning('ログイン失敗: ' . $request->email);
         return redirect()->route('login')->withErrors(['login' => 'ログイン情報が間違っています']);
-
-        // if ($user && !$user->hasVerifiedEmail()) {
-        //     return redirect()->route('login')->withErrors(['login' => 'メール認証が必要です。メールを確認してください。']);
-        // }
     }
 
     protected $guard;
@@ -522,6 +593,9 @@ class UserController extends Controller
     public function generalList()
     {
         $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('login')->withErrors(['login' => 'ユーザーが認証されていません。']);
+        }
         $month = date('Y/m');
         $year = date('Y');
         $previousMonth = (new DateTime($month . '/01'))->modify('-1 month')->format('m');
@@ -577,6 +651,9 @@ class UserController extends Controller
     public function generalOtherMonthList($year, $month)
     {
         $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('login')->withErrors(['login' => 'ユーザーが認証されていません。']);
+        }
         $month = $month;
         $year = $year;
         $previousMonth = (new DateTime($month . '/01'))->modify('-1 month')->format('m');
@@ -633,6 +710,9 @@ class UserController extends Controller
     public function generalWorkDetail($id)
     {
         $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('login')->withErrors(['login' => 'ユーザーが認証されていません。']);
+        }
         $work = Work::where('id', $id)->first();
         $application = WorkingApplication::where('work_id', $id)->where('status', '承認待ち')->first();
         $year = Carbon::parse($work->date)->format('Y年');
@@ -645,7 +725,9 @@ class UserController extends Controller
     public function apply(ApplyRequest $request, $id)
     {
         $user = Auth::user();
-
+        if (!$user) {
+            return redirect()->route('login')->withErrors(['login' => 'ユーザーが認証されていません。']);
+        }
         $workData = Work::where('id', $id)->first();
         $year = trim(str_replace('年', '', $request->year));
         $date = trim(str_replace('月', '-', str_replace('日', '', $request->date)));
@@ -682,28 +764,45 @@ class UserController extends Controller
 
     public function applicationsList()
     {
-        $user = Auth::user();
-        $waitingWorkings = WorkingApplication::where('user_id', $user->id)->where('status', '承認待ち')->get();
+        $userData = Auth::user();
+        if (!$userData) {
+            return redirect()->route('login')->withErrors(['login' => 'ユーザーが認証されていません。']);
+        }
+
+        if ($userData->role === 'admin') {
+            $waitingWorkings = WorkingApplication::where('status', '承認待ち')->get();
+            $completedWorkings = WorkingApplication::where('status', '承認済み')->get();
+        } else {
+            $waitingWorkings = WorkingApplication::where('user_id', $userData->id)->where('status', '承認待ち')->get();
+            $completedWorkings = WorkingApplication::where('user_id', $userData->id)->where('status', '承認済み')->get();
+        }
 
         $waitingOldWork = [];
         foreach ($waitingWorkings as $waitingWorking) {
             $waitingOldWork[$waitingWorking->work_id] = Work::where('id', $waitingWorking->work_id)->first();
+            $user[$waitingWorking->work_id] = User::where('id', $waitingOldWork[$waitingWorking->work_id]->user_id)->first();
         }
-
-        $completedWorkings = WorkingApplication::where('user_id', $user->id)->where('status', '承認済み')->get();
 
         $completedOldWork = [];
         foreach ($completedWorkings as $completedWorking) {
             $completedOldWork[$completedWorking->work_id] = Work::where('id', $completedWorking->work_id)->first();
+            $user[$completedWorking->work_id] = User::where('id', $completedOldWork[$completedWorking->work_id]->user_id)->first();
         }
 
-        return view('general_applications', compact('user', 'waitingWorkings', 'waitingOldWork', 'completedWorkings', 'completedOldWork'));
+        if ($userData->role === 'admin') {
+            return view('admin_applications', compact('user', 'waitingWorkings', 'waitingOldWork', 'completedWorkings', 'completedOldWork'));
+        } else {
+            return view('general_applications', compact('user', 'waitingWorkings', 'waitingOldWork', 'completedWorkings', 'completedOldWork'));
+        }
     }
 
     public function applicationsDetail($id)
     {
         $work = WorkingApplication::where('id', $id)->first();
         $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('login')->withErrors(['login' => 'ユーザーが認証されていません。']);
+        }
         $breakings = BreakingApplication::where('work_id', $work->work_id)->get();
         $year = Carbon::parse($work->date)->format('Y年');
         $date = Carbon::parse($work->date)->format('n月j日');

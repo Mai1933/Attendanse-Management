@@ -15,7 +15,7 @@ class WorkingApplicationsTableSeeder extends Seeder
     public function run(): void
     {
         $param = [
-            'user_id' => 1,
+            'user_id' => 2,
             'work_id' => 1,
             'date' => '20250320',
             'start_time' => '11:00:00',
@@ -25,7 +25,7 @@ class WorkingApplicationsTableSeeder extends Seeder
         ];
         DB::table('working_applications')->insert($param);
         $param = [
-            'user_id' => 1,
+            'user_id' => 2,
             'work_id' => 8,
             'date' => '20250321',
             'start_time' => '11:00:00',
@@ -35,7 +35,7 @@ class WorkingApplicationsTableSeeder extends Seeder
         ];
         DB::table('working_applications')->insert($param);
         $param = [
-            'user_id' => 3,
+            'user_id' => 4,
             'work_id' => 3,
             'date' => '20250321',
             'start_time' => '11:00:00',
@@ -45,7 +45,7 @@ class WorkingApplicationsTableSeeder extends Seeder
         ];
         DB::table('working_applications')->insert($param);
         $param = [
-            'user_id' => 1,
+            'user_id' => 2,
             'work_id' => 7,
             'date' => '20250420',
             'start_time' => '11:00:00',
@@ -55,7 +55,7 @@ class WorkingApplicationsTableSeeder extends Seeder
         ];
         DB::table('working_applications')->insert($param);
         $param = [
-            'user_id' => 1,
+            'user_id' => 2,
             'work_id' => 9,
             'date' => '20250420',
             'start_time' => '11:00:00',
@@ -65,7 +65,7 @@ class WorkingApplicationsTableSeeder extends Seeder
         ];
         DB::table('working_applications')->insert($param);
         $param = [
-            'user_id' => 2,
+            'user_id' => 3,
             'work_id' => 2,
             'date' => '20250420',
             'start_time' => '11:00:00',

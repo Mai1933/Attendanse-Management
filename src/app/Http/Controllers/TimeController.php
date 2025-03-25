@@ -16,7 +16,7 @@ use Laravel\Fortify\Contracts\CreatesNewUsers;
 use Laravel\Fortify\Contracts\RegisterViewResponse;
 use Laravel\Fortify\Fortify;
 use App\Actions\Fortify\CreateNewUser;
-use App\Models\GeneralUser;
+use App\Models\User;
 use App\Models\AdminUser;
 use Illuminate\Support\Facades\Log;
 use App\Http\Requests\ExhibitionRequest;
@@ -24,7 +24,7 @@ use App\Models\Comment;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Item;
 use App\Models\Category;
-use App\Models\User;
+
 use App\Models\Purchase;
 use App\Http\Requests\AddressRequest;
 use App\Http\Requests\ProfileRequest;
@@ -46,6 +46,9 @@ class TimeController extends Controller
     public function attendance()
     {
         $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('login')->withErrors(['login' => 'ユーザーが認証されていません。']);
+        }
         $date = date('Y-m-d');
         $week = ['日', '月', '火', '水', '木', '金', '土'];
         $dayOfWeek = $week[date('w')];
@@ -87,7 +90,7 @@ class TimeController extends Controller
     {
         $user = Auth::user();
         if (!$user) {
-            Log::info('Authにおいてログインに失敗しました');
+            return redirect()->route('login')->withErrors(['login' => 'ユーザーが認証されていません。']);
         }
 
         $date = date('Y-m-d');
@@ -126,7 +129,7 @@ class TimeController extends Controller
     {
         $user = Auth::user();
         if (!$user) {
-            Log::info('Authにおいてログインに失敗しました');
+            return redirect()->route('login')->withErrors(['login' => 'ユーザーが認証されていません。']);
         }
 
         $date = date('Y-m-d');
@@ -159,7 +162,7 @@ class TimeController extends Controller
     {
         $user = Auth::user();
         if (!$user) {
-            Log::info('Authにおいてログインに失敗しました');
+            return redirect()->route('login')->withErrors(['login' => 'ユーザーが認証されていません。']);
         }
 
         $date = date('Y-m-d');
@@ -181,9 +184,8 @@ class TimeController extends Controller
     {
         $user = Auth::user();
         if (!$user) {
-            Log::info('Authにおいてログインに失敗しました');
+            return redirect()->route('login')->withErrors(['login' => 'ユーザーが認証されていません。']);
         }
-
         $date = date('Y-m-d');
         $week = ['日', '月', '火', '水', '木', '金', '土'];
         $dayOfWeek = $week[date('w')];
