@@ -3,6 +3,7 @@
 use App\Http\Controllers\TimeController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Requests\EmailVerificationRequest;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
 use Laravel\Fortify\Http\Controllers\ConfirmablePasswordController;
@@ -25,6 +26,12 @@ use Laravel\Fortify\RoutePath;
 
 
 // 一般ユーザー
+
+Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
+    $request->fulfill();
+    return redirect('/login');
+})->middleware(['signed'])->name('verification.verify');
+
 Route::get('/login', [UserController::class, 'generalLogin'])->name('login');
 
 Route::post('/login', [UserController::class, 'loginStore']);

@@ -7,6 +7,7 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Requests\ApplyRequest;
 use DateTime;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Routing\Controller;
@@ -39,7 +40,6 @@ use Laravel\Fortify\Actions\EnsureLoginIsNotThrottled;
 use Laravel\Fortify\Actions\PrepareAuthenticatedSession;
 use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
 use Laravel\Fortify\Features;
-use Illuminate\Http\Request;
 use App\Responses\RegisterResponse;
 use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
 
@@ -47,6 +47,13 @@ use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
 
 class UserController extends Controller
 {
+    public function __invoke(Request $request)
+    {
+        return $request->user()->hasVerifiedEmail()
+            ? app(RedirectAsIntended::class, ['name' => 'email-verification'])
+            : app(VerifyEmailViewResponse::class);
+    }
+
     public function adminLogin()
     {
         return view('admin_login');
@@ -54,18 +61,6 @@ class UserController extends Controller
 
     public function adminLoginStore(LoginRequest $request)
     {
-        // $user = User::where('email', $request->email)->where('role','admin')->first();
-        // if (!$user) {
-        //     return redirect()->route('admin.login')->withErrors(['adminLogin' => 'ログイン情報が登録されていません']);
-        // }
-
-        // if (!Hash::check($request->password, $user->password)) {
-        //     return redirect()->route('admin.login')->withErrors(['adminLogin' => 'パスワードが間違っています']);
-        // }
-
-        // if ($user && !$user->hasVerifiedEmail()) {
-        //     return redirect()->route('login')->withErrors(['login' => 'メール認証が必要です。メールを確認してください。']);
-        // }
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
             $user = Auth::user();
 
@@ -113,10 +108,6 @@ class UserController extends Controller
                     $startTime = strtotime($breaking->start_time);
                     $endTime = strtotime($breaking->end_time);
                     $totalBreakTime += ($endTime - $startTime);
-                    // $totalBreakTimes[$todaysWork->id] = $totalBreakTime;
-                    // $breakHours = floor($totalBreakTimes[$todaysWork->id] / 3600);
-                    // $breakMinutes = floor(($totalBreakTimes[$todaysWork->id] % 3600) / 60);
-                    // $formattedBreakTimes[$todaysWork->id] = sprintf('%2d:%02d', $breakHours, $breakMinutes);
                 }
             }
             $totalBreakTimes[$todaysWork->id] = $totalBreakTime;
@@ -378,25 +369,6 @@ class UserController extends Controller
         return view('users_attendance_list', compact('user', 'date', 'previousMonth', 'nextMonth', 'works', 'workDayOfWeek', 'formattedBreakTimes', 'formattedWorkTimes'));
     }
 
-    // public function adminApplicationsList()
-    // {
-    //     $waitingWorkings = WorkingApplication::where('status', '承認待ち')->get();
-
-    //     $waitingOldWork = [];
-    //     foreach ($waitingWorkings as $waitingWorking) {
-    //         $waitingOldWork[$waitingWorking->work_id] = Work::where('id', $waitingWorking->work_id)->first();
-    //         $user[$waitingWorking->work_id] = User::where('id', $waitingOldWork[$waitingWorking->work_id]->user_id)->first();
-    //     }
-
-    //     $completedWorkings = WorkingApplication::where('status', '承認済み')->get();
-    //     $completedOldWork = [];
-    //     foreach ($completedWorkings as $completedWorking) {
-    //         $completedOldWork[$completedWorking->work_id] = Work::where('id', $completedWorking->work_id)->first();
-    //         $user[$completedWorking->work_id] = User::where('id', $completedOldWork[$completedWorking->work_id]->user_id)->first();
-    //     }
-    //     return view('admin_applications', compact('user', 'waitingWorkings', 'waitingOldWork', 'completedWorkings', 'completedOldWork'));
-    // }
-
     public function applicationDetail($id)
     {
         $userData = Auth::user();
@@ -528,6 +500,12 @@ class UserController extends Controller
     public function loginStore(LoginRequest $request)
     {
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+            $user = Auth::user();
+            if (!$user->hasVerifiedEmail()) {
+                Auth::logout();
+                return redirect()->route('login')->withErrors(['login' => 'メール認証が必要です。メールを確認してください。']);
+            }
+
             return $this->loginPipeline($request)->then(function ($request) {
                 return app(LoginResponse::class);
             });
@@ -545,7 +523,6 @@ class UserController extends Controller
 
     protected function loginPipeline(LoginRequest $request)
     {
-        // Log::info('ログインパイプライン開始');
         if (Fortify::$authenticateThroughCallback) {
             return (new Pipeline(app()))->send($request)->through(array_filter(
                 call_user_func(Fortify::$authenticateThroughCallback, $request)
@@ -553,13 +530,11 @@ class UserController extends Controller
         }
 
         if (is_array(config('fortify.pipelines.login'))) {
-            // Log::info('Fortifyパイプラインを使用しています。');
             return (new Pipeline(app()))->send($request)->through(array_filter(
                 config('fortify.pipelines.login')
             ));
         }
 
-        // Log::info('デフォルトのパイプラインを使用中');
         return (new Pipeline(app()))->send($request)->through(array_filter([
             config('fortify.limiters.login') ? null : EnsureLoginIsNotThrottled::class,
             config('fortify.lowercase_usernames') ? CanonicalizeUsername::class : null,
@@ -732,9 +707,6 @@ class UserController extends Controller
         $year = trim(str_replace('年', '', $request->year));
         $date = trim(str_replace('月', '-', str_replace('日', '', $request->date)));
         $applyDate = date('Y-m-d', strtotime($year . '-' . $date));
-        // Log::info('Year: ' . $year);
-        // Log::info('Date: ' . $date);
-        // Log::info('Apply Date: ' . $applyDate);
 
         $workingApplication = new WorkingApplication();
         $workingApplication->user_id = $user->id;

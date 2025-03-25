@@ -9,6 +9,6 @@ class RegisterResponse implements RegisterResponseContract
 {
     public function toResponse($request): Response
     {
-        return redirect('/attendance');
+        return redirect('/login');
     }
 }
