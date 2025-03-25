@@ -18,7 +18,7 @@
                     </a>
                     <div class="data_content">
                         <img src="{{ asset('storage/calender.png') }}" alt="calender" class="data_content-img">
-                        <p class="data_link-character">{{ $year }}/{{ $month }}</p>
+                        <p class="data_link-character">{{ $month }}</p>
                     </div>
                     <a href="/attendance/list/{{ $year }}/{{ $nextMonth }}" class="data_link">
                         <p>翌月</p>

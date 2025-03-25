@@ -14,7 +14,7 @@
                 </div>
                 <p class="works_date">{{ date('Y年n月j日', strtotime($date)) }}({{ $dayOfWeek }})</p>
                 <div class="works_time">
-                    <p class="works_time-content">{{ $time }}</p>
+                    <p id="currentTime" class="works_time-content"></p>
                 </div>
                 <div class="works_buttons">
                     <a href="/attendance/complete" class="works_buttons-work">退勤</a>
@@ -23,4 +23,5 @@
             </form>
         </div>
     </div>
+    <script src="{{ asset('js/time.js') }}"></script>
 @endsection

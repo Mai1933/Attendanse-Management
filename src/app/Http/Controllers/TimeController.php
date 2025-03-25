@@ -38,6 +38,7 @@ use Laravel\Fortify\Actions\PrepareAuthenticatedSession;
 use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
 use Laravel\Fortify\Features;
 use App\Responses\RegisterResponse;
+use ReturnTypeWillChange;
 
 
 
@@ -82,6 +83,8 @@ class TimeController extends Controller
                 $work->end_time === null
             ) {
                 return view('work_after', compact('date', 'dayOfWeek', 'time'));
+            } elseif ($work->end_time !== null) {
+                return view('work_before', compact('date', 'dayOfWeek', 'time'));
             }
         }
     }

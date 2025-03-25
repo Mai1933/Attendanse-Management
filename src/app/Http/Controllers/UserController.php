@@ -387,6 +387,7 @@ class UserController extends Controller
 
     public function approve(Request $request, $id)
     {
+        \Log::info('Request Data:', $request->all());
         $userData = Auth::user();
         if (!$userData) {
             return redirect()->route('login')->withErrors(['login' => 'ユーザーが認証されていません。']);
@@ -412,13 +413,15 @@ class UserController extends Controller
 
         $date = date('Y-m-d', strtotime($work->date));
 
-        $breakings = Breaking::where('work_id', $id)->get();
-        foreach ($breakings as $index => $breaking) {
-            if (isset($request->break_start[$index]) && isset($request->break_end[$index])) {
-                $breaking->start_time = $request->break_start[$index];
-                $breaking->end_time = $request->break_end[$index];
-                $breaking->save();
-            }
+        $breakings = Breaking::where('work_id', $id)->delete();
+        $breakingApplications = BreakingApplication::where('work_id', $id)->get();
+        foreach ($breakingApplications as $breakingApplication) {
+            $breaking = new Breaking();
+            $breaking->user_id = $breakingApplication->user_id;
+            $breaking->work_id = $breakingApplication->work_id;
+            $breaking->start_time = $breakingApplication->start_time;
+            $breaking->end_time = $breakingApplication->end_time;
+            $breaking->save();
         }
         return redirect('/admin/attendance/list/' . $date);
     }

@@ -90,7 +90,7 @@ Route::get('/admin/attendance/staff/{id}/{date}', [UserController::class, 'indiv
 
 Route::get('/stamp_correction_request/approve/{id}', [UserController::class, 'applicationDetail'])->where('id', '[0-9]+');
 
-Route::put('/stamp_correction_request/approve/{id}', [UserController::class, 'approve'])->where('id', '[0-9]+');
+Route::post('/stamp_correction_request/approve/{id}', [UserController::class, 'approve'])->where('id', '[0-9]+');
 
 Route::post('/export/{id}', [UserController::class, 'csvExport'])->where('id', '[0-9]+');
 
