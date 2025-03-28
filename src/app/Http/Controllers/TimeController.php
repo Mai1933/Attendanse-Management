@@ -71,9 +71,7 @@ class TimeController extends Controller
                 $work->end_time === null
             ) {
                 return view('work_after', compact('date', 'dayOfWeek', 'time'));
-            } elseif ($work->end_time !== null) {
-                return view('work_finish', compact('date', 'dayOfWeek', 'time'));
-            }elseif (
+            } elseif (
                 $lastBreak->start_time !== null &&
                 $lastBreak->end_time === null &&
                 $work->end_time === null

@@ -366,7 +366,7 @@ class AllControllerTest extends TestCase
             'user_id' => $user->id,
             'date' => today(),
             'start_time' => now()->subHours(8),
-            'end_time' =>now()
+            'end_time' => now()
         ]);
         $response = $this->get('/attendance');
         $response->assertSee('退勤済');
@@ -398,7 +398,8 @@ class AllControllerTest extends TestCase
 
     //[出勤機能]
     //出勤ボタンが正しく機能する
-    public function testAttendanceButton() {
+    public function testAttendanceButton()
+    {
         $user = User::create([
             'name' => 'test',
             'email' => 'test@example.com',
@@ -411,6 +412,7 @@ class AllControllerTest extends TestCase
         $response = $this->post('/attendance');
         $response->assertStatus(200);
         $response->assertViewIs('work_after');
+        $response->assertSee('勤務中');
         $this->assertDatabaseHas('works', [
             'user_id' => $user->id,
             'date' => today(),
@@ -418,7 +420,8 @@ class AllControllerTest extends TestCase
         ]);
     }
     //出勤は一日一回のみできる
-    public function testOnceAttendanceButton() {
+    public function testOnceAttendanceButton()
+    {
         $user = User::create([
             'name' => 'test',
             'email' => 'test@example.com',
@@ -459,6 +462,150 @@ class AllControllerTest extends TestCase
         $response = $this->get('/attendance/list');
         $response->assertStatus(200);
         $response->assertViewIs('general_attendance');
-        $response->assertSee(date('H:i'),today());
+        $response->assertSee(date('H:i'), today());
+    }
+
+    //[休憩機能]
+    //休憩ボタンが正しく機能する
+    public function testBreakStartButton()
+    {
+        $user = User::create([
+            'name' => 'test',
+            'email' => 'test@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+        ]);
+        $this->actingAs($user);
+        $work = Work::create([
+            'user_id' => $user->id,
+            'date' => today(),
+            'start_time' => now(),
+        ]);
+        $response = $this->get('/attendance');
+        $response->assertViewIs('work_after');
+        $response->assertSee('休憩入');
+
+        $response = $this->get('/attendance/break');
+        $response->assertViewIs('work_break');
+        $response->assertSee('休憩中');
+        $this->assertDatabaseHas('breakings', [
+            'user_id' => $user->id,
+            'work_id' => $work->id,
+            'start_time' => date('H:i:s')
+        ]);
+    }
+    //休憩は一日に何回でもできる
+    public function testManyTimeBreakStartButton()
+    {
+        $user = User::create([
+            'name' => 'test',
+            'email' => 'test@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+        ]);
+        $this->actingAs($user);
+        $work = Work::create([
+            'user_id' => $user->id,
+            'date' => today(),
+            'start_time' => now(),
+        ]);
+        $break = Breaking::create([
+            'user_id' => $user->id,
+            'work_id' => $work->id,
+            'start_time' => now()->addHours(1),
+            'end_time' => now()->addHours(2),
+        ]);
+        $response = $this->get('/attendance');
+        $response->assertViewIs('work_after');
+        $response->assertSee('休憩入');
+    }
+    //休憩戻ボタンが正しく機能する
+    public function testBreakEndButton()
+    {
+        $user = User::create([
+            'name' => 'test',
+            'email' => 'test@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+        ]);
+        $this->actingAs($user);
+        $work = Work::create([
+            'user_id' => $user->id,
+            'date' => today(),
+            'start_time' => now(),
+        ]);
+
+        $response = $this->get('/attendance/break');
+        $response->assertViewIs('work_break');
+        $response->assertSee('休憩中');
+        $response->assertSee('休憩戻');
+
+        $response = $this->get('/attendance/return');
+        $response->assertViewIs('work_after');
+        $response->assertSee('勤務中');
+
+        $this->assertDatabaseHas('breakings', [
+            'user_id' => $user->id,
+            'work_id' => $work->id,
+            'start_time' => date('H:i:s'),
+            'end_time' => date('H:i:s')
+        ]);
+    }
+    //休憩戻は一日に何回でもできる
+    public function testManyTimeBreakEndButton()
+    {
+        $user = User::create([
+            'name' => 'test',
+            'email' => 'test@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+        ]);
+        $this->actingAs($user);
+        $work = Work::create([
+            'user_id' => $user->id,
+            'date' => today(),
+            'start_time' => now(),
+        ]);
+        $break = Breaking::create([
+            'user_id' => $user->id,
+            'work_id' => $work->id,
+            'start_time' => now()->addHours(1),
+            'end_time' => now()->addHours(2),
+        ]);
+
+        $response = $this->get('/attendance/break');
+        $response->assertViewIs('work_break');
+        $response->assertSee('休憩中');
+        $response->assertSee('休憩戻');
+    }
+    //休憩時刻が管理画面で確認できる
+    public function testBreakTimeStore()
+    {
+        $user = User::create([
+            'name' => 'test',
+            'email' => 'test@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+        ]);
+        $this->actingAs($user);
+        $work = Work::create([
+            'user_id' => $user->id,
+            'date' => today(),
+            'start_time' => now(),
+        ]);
+
+        $response = $this->get('/attendance/break');
+        $response = $this->get('/attendance/return');
+
+        $this->assertDatabaseHas('breakings', [
+            'user_id' => $user->id,
+            'work_id' => $work->id,
+            'start_time' => date('H:i:s'),
+            'end_time' => date('H:i:s'),
+        ]);
+
+        $response = $this->get('/attendance/' . $work->id);
+        $response->assertStatus(200);
+        $response->assertSee(date('H:i'));
     }
 }
