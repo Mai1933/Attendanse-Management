@@ -73,7 +73,7 @@ class UserController extends Controller
             });
         }
 
-        return redirect()->route('login')->withErrors(['login' => 'ログイン情報が間違っています']);
+        return redirect()->route('login')->withErrors(['login' => 'ログイン情報が登録されていません']);
 
     }
 
@@ -513,7 +513,7 @@ class UserController extends Controller
             });
         }
 
-        return redirect()->route('login')->withErrors(['login' => 'ログイン情報が間違っています']);
+        return redirect()->route('login')->withErrors(['login' => 'ログイン情報が登録されていません']);
     }
 
     protected $guard;

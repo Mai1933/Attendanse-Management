@@ -10,11 +10,11 @@
             <form action="" method="" class="works_form">
                 @csrf
                 <div class="works_status">
-                    <p class="works_status-content">出勤中</p>
+                    <p class="works_status-content">勤務中</p>
                 </div>
                 <p class="works_date">{{ date('Y年n月j日', strtotime($date)) }}({{ $dayOfWeek }})</p>
                 <div class="works_time">
-                    <p id="currentTime" class="works_time-content"></p>
+                    <p id="" class="works_time-content">{{ $time }}</p>
                 </div>
                 <div class="works_buttons">
                     <a href="/attendance/complete" class="works_buttons-work">退勤</a>
@@ -23,5 +23,4 @@
             </form>
         </div>
     </div>
-    <script src="{{ asset('js/time.js') }}"></script>
 @endsection

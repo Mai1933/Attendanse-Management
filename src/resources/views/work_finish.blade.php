@@ -14,11 +14,10 @@
                 </div>
                 <p class="works_date">{{ date('Y年n月j日', strtotime($date)) }}({{ $dayOfWeek }})</p>
                 <div class="works_time">
-                    <p id="currentTime" class="works_time-content"></p>
+                    <p id="" class="works_time-content">{{ $time }}</p>
                 </div>
                 <p class="works_message">お疲れ様でした。</p>
             </form>
         </div>
     </div>
-    <script src="{{ asset('js/time.js') }}"></script>
 @endsection
