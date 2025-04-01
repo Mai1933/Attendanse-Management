@@ -64,9 +64,9 @@
                         </div>
                         <div class="row_content">
                             <div class="row_content-inner">
-                                <input type="time" class="row_content-input" value="" name="break_start">
+                                <input type="time" class="row_content-input" name="break_start">
                                 <p class="row_content-character">〜</p>
-                                <input type="time" class="row_content-input" value="" name="break_end">
+                                <input type="time" class="row_content-input" name="break_end">
                             </div>
                         </div>
                     </div>

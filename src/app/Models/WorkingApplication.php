@@ -9,6 +9,7 @@ class WorkingApplication extends Model
     protected $fillable = [
         'user_id',
         'work_id',
+        'date',
         'start_time',
         'end_time',
         'remarks',

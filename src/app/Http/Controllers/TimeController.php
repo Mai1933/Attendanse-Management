@@ -56,7 +56,6 @@ class TimeController extends Controller
         $time = date('H:i');
 
         $work = Work::where('date', $date)->where('user_id', $user->id)->first();
-        Log::info('Work data:', ['work' => $work]);
         if (!$work) {
             return view('work_before', compact('date', 'dayOfWeek', 'time'));
         }

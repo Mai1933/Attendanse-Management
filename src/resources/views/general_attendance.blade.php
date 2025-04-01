@@ -35,11 +35,7 @@
                         <th class="table_content">合計</th>
                         <th class="table_content">詳細</th>
                     </tr>
-                    @if (empty($workDayOfWeek))
-                        <tr>
-                            <td colspan="6" class="table_content-time text-center">該当する勤怠データはありません。</td> <!-- メッセージを表示 -->
-                        </tr>
-                    @else
+                    @if (!empty($workDayOfWeek))
                         @foreach ($works as $work)
                             <tr class="table_contents">
                                 <td class="table_content-name">
@@ -58,6 +54,10 @@
                                 </td>
                             </tr>
                         @endforeach
+                    @else
+                        <tr>
+                            <td colspan="6" class="table_content-time text-center">該当する勤怠データはありません。</td> <!-- メッセージを表示 -->
+                        </tr>
                     @endif
                 </table>
             </div>

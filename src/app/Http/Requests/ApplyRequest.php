@@ -26,8 +26,34 @@ class ApplyRequest extends FormRequest
             'date' => 'required',
             'work_start' => 'required',
             'work_end' => 'required|after:work_start',
-            'break_start.*' => 'nullable|after:work_start',
-            'break_end.*' => 'nullable|after:break_start.*|before:work_end',
+            'break_start.*' => 'nullable',
+            'break_end.*' => 'nullable',
+            // 'break_start.*' => [
+            //     'nullable',
+            //     'after:work_start',
+            //     'before:work_end',
+            //     function ($attribute, $value, $fail) {
+            //         if (isset($this->work_end) && strtotime($value) >= strtotime($this->work_end)) {
+            //             $fail('休憩時間が勤務時間外です');
+            //         }
+            //         if (isset($this->work_start) && strtotime($value) <= strtotime($this->work_start)) {
+            //             $fail('休憩時間が勤務時間外です');
+            //         }
+            //     },
+            // ],
+            // 'break_end.*' => [
+            //     'nullable',
+            //     'after:break_start.*',
+            //     'before:work_end',
+            //     function ($attribute, $value, $fail) {
+            //         if (isset($this->work_end) && strtotime($value) >= strtotime($this->work_end)) {
+            //             $fail('休憩時間が勤務時間外です');
+            //         }
+            //         if (isset($this->work_start) && strtotime($value) <= strtotime($this->work_start)) {
+            //             $fail('休憩時間が勤務時間外です');
+            //         }
+            //     },
+            // ],
             'remarks' => 'required',
         ];
     }
@@ -39,9 +65,6 @@ class ApplyRequest extends FormRequest
             'work_start.required' => '出勤時刻を入力してください',
             'work_end.required' => '退勤時刻を入力してください',
             'work_end.after' => '出勤時刻もしくは退勤時刻が不適切な値です',
-            'break_start.*.after' => '休憩時間が勤務時間外です',
-            'break_end.*.after' => '休憩入時刻もしくは休憩戻時刻が不適切な値です',
-            'break_end.*.before' => '休憩時間が勤務時間外です',
             'remarks.required' => '備考を記入してください',
         ];
     }

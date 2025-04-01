@@ -721,19 +721,33 @@ class UserController extends Controller
         $workingApplication->status = '承認待ち';
         $workingApplication->save();
 
-        if ($request->has('break_start') && $request->has('break_end')) {
-            foreach ($request->break_start as $index => $breakStart) {
-                if (!empty($breakStart) && isset($request->break_end[$index])) {
-                    $breakingApplication = new BreakingApplication();
-                    $breakingApplication->user_id = $user->id;
-                    $breakingApplication->work_id = $id;
-                    $breakingApplication->start_time = $breakStart;
-                    $breakingApplication->end_time = $request->break_end[$index];
-                    $breakingApplication->save();
+        $breakings = [];
+        $breakStarts = is_array($request->break_start) ? $request->break_start : [$request->break_start];
+        $breakEnds = is_array($request->break_end) ? $request->break_end : [$request->break_end];
+
+        foreach ($breakStarts as $index => $start) {
+            $end = $breakEnds[$index];
+            if ($start && $end) {
+                if (strtotime($start) >= strtotime($request->work_end)) {
+                    return redirect('/attendance/' . $id)->withErrors(['break_start' => '休憩時間が勤務時間外です']);
                 }
+                if (strtotime($start) <= strtotime($request->work_start)) {
+                    return redirect('/attendance/' . $id)->withErrors(['break_start' => '休憩時間が勤務時間外です']);
+                }
+                if (strtotime($end) >= strtotime($request->work_end)) {
+                    return redirect('/attendance/' . $id)->withErrors(['break_end' => '休憩時間が勤務時間外です']);
+                }
+                if (strtotime($end) <= strtotime($request->work_start)) {
+                    return redirect('/attendance/' . $id)->withErrors(['break_end' => '休憩時間が勤務時間外です']);
+                }
+                $breakingApplication = new BreakingApplication();
+                $breakingApplication->user_id = $user->id;
+                $breakingApplication->work_id = $id;
+                $breakingApplication->start_time = $start;
+                $breakingApplication->end_time = $end;
+                $breakingApplication->save();
             }
         }
-
         return redirect('/attendance/list');
     }
 
