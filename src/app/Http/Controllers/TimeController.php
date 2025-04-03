@@ -61,6 +61,17 @@ class TimeController extends Controller
         }
 
         $breaks = Breaking::where('work_id', $work->id)->get();
+        if (
+            $breaks->isEmpty() &&
+            $work->end_time === null
+        ) {
+            return view('work_after', compact('date', 'dayOfWeek', 'time'));
+        } elseif (
+            $breaks->isEmpty() &&
+            $work->end_time !== null
+        ) {
+            return view('work_finish', compact('date', 'dayOfWeek', 'time'));
+        }
         $firstBreak = $breaks->first();
         $lastBreak = $breaks->last();
 
@@ -71,17 +82,33 @@ class TimeController extends Controller
             ) {
                 return view('work_after', compact('date', 'dayOfWeek', 'time'));
             } elseif (
+                $lastBreak !== null &&
                 $lastBreak->start_time !== null &&
                 $lastBreak->end_time === null &&
                 $work->end_time === null
             ) {
                 return view('work_break', compact('date', 'dayOfWeek', 'time'));
             } elseif (
+                $lastBreak !== null &&
+                $lastBreak->start_time !== null &&
+                $lastBreak->end_time === null &&
+                $work->end_time === null
+            ) {
+                return view('work_break', compact('date', 'dayOfWeek', 'time'));
+            } elseif (
+                $lastBreak !== null &&
                 $lastBreak->start_time !== null &&
                 $lastBreak->end_time !== null &&
                 $work->end_time === null
             ) {
                 return view('work_after', compact('date', 'dayOfWeek', 'time'));
+            } elseif (
+                $lastBreak !== null &&
+                $lastBreak->start_time !== null &&
+                $lastBreak->end_time !== null &&
+                $work->end_time !== null
+            ) {
+                return view('work_finish', compact('date', 'dayOfWeek', 'time'));
             }
         }
     }

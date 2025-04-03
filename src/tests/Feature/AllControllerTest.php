@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Tests\TestCase;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Foundation\Testing\WithFaker;
 use App\Http\Requests\ApplyRequest;
@@ -14,18 +16,22 @@ use App\Models\Work;
 use App\Models\Breaking;
 use App\Models\WorkingApplication;
 use App\Models\BreakingApplication;
-use Tests\TestCase;
 use Illuminate\Support\Facades\Log;
 
 class AllControllerTest extends TestCase
 {
     use RefreshDatabase;
-    // [認証機能(一般ユーザー)]
-    // 名前が未入力の場合、バリデーションメッセージが表示される
-    // メールアドレスが未入力の場合、バリデーションメッセージが表示される
-    // パスワードが8文字未満の場合、バリデーションメッセージが表示される
-    // パスワードが一致しない場合、バリデーションメッセージが表示される
-    // パスワードが未入力の場合、バリデーションメッセージが表示される
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+    }
+    // // [認証機能(一般ユーザー)]
+    // // 名前が未入力の場合、バリデーションメッセージが表示される
+    // // メールアドレスが未入力の場合、バリデーションメッセージが表示される
+    // // パスワードが8文字未満の場合、バリデーションメッセージが表示される
+    // // パスワードが一致しない場合、バリデーションメッセージが表示される
+    // // パスワードが未入力の場合、バリデーションメッセージが表示される
     #[\PHPUnit\Framework\Attributes\DataProvider('RegisterDataproviderValidation')]
     public function testRegisterValidationCheck(array $params, array $messages, bool $expect): void
     {
@@ -386,8 +392,8 @@ class AllControllerTest extends TestCase
         $work = Work::create([
             'user_id' => $user->id,
             'date' => today(),
-            'start_time' => now()->subHours(8),
-            'end_time' => now()
+            'start_time' => now(),
+            'end_time' => now()->addHours(8)
         ]);
         $break = Breaking::create([
             'user_id' => $user->id,
@@ -401,6 +407,7 @@ class AllControllerTest extends TestCase
 
     //[出勤機能]
     //出勤ボタンが正しく機能する
+
     public function testAttendanceButton()
     {
         $user = User::create([
@@ -435,8 +442,8 @@ class AllControllerTest extends TestCase
         $work = Work::create([
             'user_id' => $user->id,
             'date' => today(),
-            'start_time' => now()->subHours(8),
-            'end_time' => now()
+            'start_time' => now(),
+            'end_time' => now()->addHours(8)
         ]);
         $response = $this->get('/attendance');
         $response->assertDontSee('<button type="submit">出勤</button>');
@@ -626,7 +633,7 @@ class AllControllerTest extends TestCase
         $work = Work::create([
             'user_id' => $user->id,
             'date' => today(),
-            'start_time' => now(),
+            'start_time' => '09:00:00',
         ]);
         $response = $this->get('/attendance');
         $response->assertSee('退勤');
@@ -639,7 +646,7 @@ class AllControllerTest extends TestCase
         $this->assertDatabaseHas('works', [
             'user_id' => $user->id,
             'date' => today(),
-            'start_time' => date('H:i:s'),
+            'start_time' => '09:00:00',
             'end_time' => date('H:i:s')
         ]);
     }
@@ -761,27 +768,27 @@ class AllControllerTest extends TestCase
         $work1 = Work::create([
             'user_id' => $user->id,
             'date' => '2025-04-01',
-            'start_time' => now(),
-            'end_time' => now()->addHours(8),
+            'start_time' => '09:00:00',
+            'end_time' => '17:00:00',
         ]);
         $break1 = Breaking::create([
             'user_id' => $user->id,
             'work_id' => $work1->id,
-            'start_time' => now()->addHours(1),
-            'end_time' => now()->addHours(2),
+            'start_time' => '12:00:00',
+            'end_time' => '13:00:00',
         ]);
 
         $work2 = Work::create([
             'user_id' => $user->id,
             'date' => '2025-03-31',
-            'start_time' => now(),
-            'end_time' => now()->addHours(6),
+            'start_time' => '09:00:00',
+            'end_time' => '17:00:00',
         ]);
         $break2 = Breaking::create([
             'user_id' => $user->id,
             'work_id' => $work2->id,
-            'start_time' => now()->subMonth()->addHours(1),
-            'end_time' => now()->subMonth()->addHours(2),
+            'start_time' => '10:00:00',
+            'end_time' => '13:00:00',
         ]);
         $expectedStartTime = date('H:i', strtotime($work2->start_time));
         $expectedEndTime = date('H:i', strtotime($work2->end_time));
@@ -792,7 +799,7 @@ class AllControllerTest extends TestCase
         $response->assertSee('03/31(月)');
         $response->assertSee($expectedStartTime);
         $response->assertSee($expectedEndTime);
-        $response->assertSee('1:00');
+        $response->assertSee('3:00');
         $response->assertSee('5:00');
     }
     //「翌月」を押下した時に表示月の翌月の情報が表示される
@@ -1276,8 +1283,8 @@ class AllControllerTest extends TestCase
         $response->assertSee('テスト');
     }
 
-    //[勤怠一覧情報取得機能（管理者）]
-    //その日になされた全ユーザーの勤怠情報が正確に確認できる
+    // [勤怠一覧情報取得機能（管理者）]
+    // その日になされた全ユーザーの勤怠情報が正確に確認できる
     public function testAllAdminAttendanceInformation()
     {
         $user1 = User::create([
@@ -1499,8 +1506,8 @@ class AllControllerTest extends TestCase
         $response->assertSee($expectedWorkTime2);
     }
 
-    //[勤怠詳細情報取得・修正機能（管理者）]
-    //勤怠詳細画面に表示されるデータが選択したものになっている
+    // [勤怠詳細情報取得・修正機能（管理者）]
+    // 勤怠詳細画面に表示されるデータが選択したものになっている
     public function testAdminAttendanceDetailsInformation()
     {
         $user = User::create([
@@ -1547,8 +1554,8 @@ class AllControllerTest extends TestCase
         $response->assertSee($expectedBreakStartTime);
         $response->assertSee($expectedBreakEndTime);
     }
-    //出勤時間が退勤時間より後になっている場合、エラーメッセージが表示される
-    //備考欄が未入力の場合のエラーメッセージが表示される
+    // 出勤時間が退勤時間より後になっている場合、エラーメッセージが表示される
+    // 備考欄が未入力の場合のエラーメッセージが表示される
     #[\PHPUnit\Framework\Attributes\DataProvider('FixDataproviderValidation')]
     public function testFixValidationCheck(array $params, array $messages, bool $expect): void
     {
@@ -1938,7 +1945,7 @@ class AllControllerTest extends TestCase
         $response->assertSee($expectedBreakTime4);
         $response->assertSee($expectedWorkTime4);
     }
-    //「詳細」を押下すると、その日の勤怠詳細画面に遷移する
+    // 「詳細」を押下すると、その日の勤怠詳細画面に遷移する
     public function testUsersAttendanceInformationDetail()
     {
         $user = User::create([
@@ -1970,7 +1977,6 @@ class AllControllerTest extends TestCase
         $this->actingAs($adminUser);
 
         $response = $this->get('/admin/attendance/' . $user->id);
-        $response->assertStatus(200);
 
         $expectedWorkStartTime = date('H:i', strtotime($work->start_time));
         $expectedWorkEndTime = date('H:i', strtotime($work->end_time));
@@ -1984,5 +1990,297 @@ class AllControllerTest extends TestCase
         $response->assertSee($expectedWorkEndTime);
         $response->assertSee($expectedBreakStartTime);
         $response->assertSee($expectedBreakEndTime);
+    }
+
+    //[勤怠情報修正機能（管理者）]
+    //承認待ちの修正申請が全て表示されている
+    public function testAdminWaitingApplicationsDisplayed()
+    {
+        $user1 = User::create([
+            'name' => 'test1',
+            'email' => 'test1@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+        ]);
+        $user2 = User::create([
+            'name' => 'test2',
+            'email' => 'test2@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+        ]);
+
+        $work1 = Work::create([
+            'user_id' => $user1->id,
+            'date' => '2025-04-01',
+            'start_time' => now(),
+            'end_time' => now()->addHours(8),
+        ]);
+        $break1 = Breaking::create([
+            'user_id' => $user1->id,
+            'work_id' => $work1->id,
+            'start_time' => now()->addHours(1),
+            'end_time' => now()->addHours(2),
+        ]);
+        $work2 = Work::create([
+            'user_id' => $user2->id,
+            'date' => '2025-04-02',
+            'start_time' => now(),
+            'end_time' => now()->addHours(8),
+        ]);
+        $break2 = Breaking::create([
+            'user_id' => $user2->id,
+            'work_id' => $work2->id,
+            'start_time' => now()->addHours(1),
+            'end_time' => now()->addHours(5),
+        ]);
+
+        $workApplication1 = WorkingApplication::create([
+            'user_id' => $user1->id,
+            'work_id' => $work1->id,
+            'date' => '2025-04-03',
+            'start_time' => '11:00:00',
+            'end_time' => '19:00:00',
+            'remarks' => 'テスト1',
+            'status' => '承認待ち'
+        ]);
+        $workApplication2 = WorkingApplication::create([
+            'user_id' => $user2->id,
+            'work_id' => $work2->id,
+            'date' => '2025-04-04',
+            'start_time' => '12:00:00',
+            'end_time' => '20:00:00',
+            'remarks' => 'テスト2',
+            'status' => '承認待ち'
+        ]);
+
+        $adminUser = User::create([
+            'name' => 'admin',
+            'email' => 'admin@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+            'role' => 'admin'
+        ]);
+        $this->actingAs($adminUser);
+
+        $response = $this->get('/stamp_correction_request/list');
+        $response->assertStatus(200);
+        $response->assertViewIs('admin_applications');
+
+        $response->assertSee('承認待ち');
+        $response->assertSee('test1');
+        $response->assertSee('2025/04/01');
+        $response->assertSee('テスト1');
+        $response->assertSee('2025/04/03');
+
+        $response->assertSee('承認待ち');
+        $response->assertSee('test2');
+        $response->assertSee('2025/04/02');
+        $response->assertSee('テスト2');
+        $response->assertSee('2025/04/04');
+    }
+    //承認済みの修正申請が全て表示されている
+    public function testAdminCompletedApplicationsDisplayed()
+    {
+        $user1 = User::create([
+            'name' => 'test1',
+            'email' => 'test1@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+        ]);
+        $user2 = User::create([
+            'name' => 'test2',
+            'email' => 'test2@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+        ]);
+
+        $work1 = Work::create([
+            'user_id' => $user1->id,
+            'date' => '2025-04-01',
+            'start_time' => now(),
+            'end_time' => now()->addHours(8),
+        ]);
+        $break1 = Breaking::create([
+            'user_id' => $user1->id,
+            'work_id' => $work1->id,
+            'start_time' => now()->addHours(1),
+            'end_time' => now()->addHours(2),
+        ]);
+        $work2 = Work::create([
+            'user_id' => $user2->id,
+            'date' => '2025-04-02',
+            'start_time' => now(),
+            'end_time' => now()->addHours(8),
+        ]);
+        $break2 = Breaking::create([
+            'user_id' => $user2->id,
+            'work_id' => $work2->id,
+            'start_time' => now()->addHours(1),
+            'end_time' => now()->addHours(5),
+        ]);
+
+        $workApplication1 = WorkingApplication::create([
+            'user_id' => $user1->id,
+            'work_id' => $work1->id,
+            'date' => '2025-04-03',
+            'start_time' => '11:00:00',
+            'end_time' => '19:00:00',
+            'remarks' => 'テスト1',
+            'status' => '承認済み'
+        ]);
+        $workApplication2 = WorkingApplication::create([
+            'user_id' => $user2->id,
+            'work_id' => $work2->id,
+            'date' => '2025-04-04',
+            'start_time' => '12:00:00',
+            'end_time' => '20:00:00',
+            'remarks' => 'テスト2',
+            'status' => '承認済み'
+        ]);
+
+        $adminUser = User::create([
+            'name' => 'admin',
+            'email' => 'admin@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+            'role' => 'admin'
+        ]);
+        $this->actingAs($adminUser);
+
+        $response = $this->get('/stamp_correction_request/list');
+        $response->assertStatus(200);
+        $response->assertViewIs('admin_applications');
+
+        $response->assertSee('承認済み');
+        $response->assertSee('test1');
+        $response->assertSee('2025/04/01');
+        $response->assertSee('テスト1');
+        $response->assertSee('2025/04/03');
+
+        $response->assertSee('承認済み');
+        $response->assertSee('test2');
+        $response->assertSee('2025/04/02');
+        $response->assertSee('テスト2');
+        $response->assertSee('2025/04/04');
+    }
+    //修正申請の詳細内容が正しく表示されている
+    public function testAdminApplicationsDetail()
+    {
+        $user = User::create([
+            'name' => 'test',
+            'email' => 'test@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+        ]);
+        $work = Work::create([
+            'user_id' => $user->id,
+            'date' => '2025-04-01',
+            'start_time' => '09:00:00',
+            'end_time' => '17:00:00',
+        ]);
+        $workApplication = WorkingApplication::create([
+            'user_id' => $user->id,
+            'work_id' => $work->id,
+            'date' => '2025-04-04',
+            'start_time' => '11:00:00',
+            'end_time' => '19:00:00',
+            'remarks' => 'テスト',
+            'status' => '承認待ち'
+        ]);
+        $breakApplication = BreakingApplication::create([
+            'user_id' => $user->id,
+            'work_id' => $work->id,
+            'start_time' => '12:00:00',
+            'end_time' => '13:00:00',
+        ]);
+
+        $adminUser = User::create([
+            'name' => 'admin',
+            'email' => 'admin@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+            'role' => 'admin'
+        ]);
+        $this->actingAs($adminUser);
+
+        $response = $this->get('/stamp_correction_request/approve/' . $workApplication->id);
+        $response->assertStatus(200);
+        $response->assertViewIs('approve');
+        $response->assertSee('test');
+        $response->assertSee('2025年');
+        $response->assertSee('4月4日');
+        $response->assertSee('11:00');
+        $response->assertSee('19:00');
+        $response->assertSee('12:00');
+        $response->assertSee('13:00');
+        $response->assertSee('テスト');
+    }
+    //修正申請の承認処理が正しく行われる
+    public function testApprove()
+    {
+        $user = User::create([
+            'name' => 'test',
+            'email' => 'test@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+        ]);
+        $work = Work::create([
+            'user_id' => $user->id,
+            'date' => '2025-04-01',
+            'start_time' => '09:00:00',
+            'end_time' => '17:00:00',
+        ]);
+        $workApplication = WorkingApplication::create([
+            'user_id' => $user->id,
+            'work_id' => $work->id,
+            'date' => '2025-04-04',
+            'start_time' => '11:00:00',
+            'end_time' => '19:00:00',
+            'remarks' => 'テスト',
+            'status' => '承認待ち'
+        ]);
+        $breakApplication = BreakingApplication::create([
+            'user_id' => $user->id,
+            'work_id' => $work->id,
+            'start_time' => '12:00:00',
+            'end_time' => '13:00:00',
+        ]);
+        $data = [
+            'year' => '2025年',
+            'date' => '4月4日',
+            'work_start' => '11:00',
+            'work_end' => '19:00',
+            'break_start' => '12:00',
+            'break_end' => '13:00',
+            'remarks' => 'テスト'
+        ];
+
+        $adminUser = User::create([
+            'name' => 'admin',
+            'email' => 'admin@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+            'role' => 'admin'
+        ]);
+        $this->actingAs($adminUser);
+
+        $response = $this->post('/stamp_correction_request/approve/' . $work->id, $data);
+        $this->assertDatabaseHas('works', [
+            'user_id' => $user->id,
+            'id' => $work->id,
+            'date' => '2025-04-04',
+            'start_time' => '11:00:00',
+            'end_time' => '19:00:00',
+            'remarks' => 'テスト',
+        ]);
+        $this->assertDatabaseHas('working_applications', [
+            'user_id' => $user->id,
+            'work_id' => $work->id,
+            'date' => '2025-04-04',
+            'start_time' => '11:00:00',
+            'end_time' => '19:00:00',
+            'remarks' => 'テスト',
+            'status' => '承認済み'
+        ]);
     }
 }

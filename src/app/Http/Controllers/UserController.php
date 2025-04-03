@@ -41,12 +41,14 @@ use Laravel\Fortify\Actions\PrepareAuthenticatedSession;
 use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
 use Laravel\Fortify\Features;
 use App\Responses\RegisterResponse;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
 
 
 
 class UserController extends Controller
 {
+    use RefreshDatabase;
     public function __invoke(Request $request)
     {
         return $request->user()->hasVerifiedEmail()
@@ -426,7 +428,6 @@ class UserController extends Controller
 
     public function approve(Request $request, $id)
     {
-        \Log::info('Request Data:', $request->all());
         $userData = Auth::user();
         if (!$userData) {
             return redirect()->route('login')->withErrors(['login' => 'ユーザーが認証されていません。']);
