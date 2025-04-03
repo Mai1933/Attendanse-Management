@@ -216,23 +216,63 @@ class UserController extends Controller
         $applyDate = date('Y-m-d', strtotime($year . '-' . $date));
 
         $work = Work::where('id', $id)->first();
-        $work->date = $applyDate;
-        $work->start_time = $request->work_start;
-        $work->end_time = $request->work_end;
-        $work->remarks = $request->remarks;
-        $work->save();
 
         $date = date('Y-m-d', strtotime($work->date));
 
         $breakings = Breaking::where('work_id', $id)->get();
-        foreach ($breakings as $index => $breaking) {
-            if (isset($request->break_start[$index]) && isset($request->break_end[$index])) {
-                $breaking->start_time = $request->break_start[$index];
-                $breaking->end_time = $request->break_end[$index];
-                $breaking->save();
+        if ($breakings->isEmpty()) {
+            if (strtotime($request->break_start) >= strtotime($request->work_end)) {
+                return redirect('/admin/attendance/' . $id)->withErrors(['break_start' => '休憩時間が勤務時間外です']);
             }
+            if (strtotime($request->break_start) <= strtotime($request->work_start)) {
+                return redirect('/admin/attendance/' . $id)->withErrors(['break_start' => '休憩時間が勤務時間外です']);
+            }
+            if (strtotime($request->break_end) >= strtotime($request->work_end)) {
+                return redirect('/admin/attendance/' . $id)->withErrors(['break_end' => '休憩時間が勤務時間外です']);
+            }
+            if (strtotime($request->break_end) <= strtotime($request->work_start)) {
+                return redirect('/admin/attendance/' . $id)->withErrors(['break_end' => '休憩時間が勤務時間外です']);
+            }
+            $breaking = new Breaking;
+            $breaking->user_id = $work->user_id;
+            $breaking->work_id = $work->id;
+            $breaking->start_time = $request->break_start;
+            $breaking->end_time = $request->break_end;
+            $breaking->save();
+
+            $work->date = $applyDate;
+            $work->start_time = $request->work_start;
+            $work->end_time = $request->work_end;
+            $work->remarks = $request->remarks;
+            $work->save();
+        } else {
+            foreach ($breakings as $index => $breaking) {
+                if (isset($request->break_start[$index]) && isset($request->break_end[$index])) {
+                    if (strtotime($request->break_start[$index]) >= strtotime($request->work_end)) {
+                        return redirect('/admin/attendance/' . $id)->withErrors(['break_start' => '休憩時間が勤務時間外です']);
+                    }
+                    if (strtotime($request->break_start[$index]) <= strtotime($request->work_start)) {
+                        return redirect('/admin/attendance/' . $id)->withErrors(['break_start' => '休憩時間が勤務時間外です']);
+                    }
+                    if (strtotime($request->break_end[$index]) >= strtotime($request->work_end)) {
+                        return redirect('/admin/attendance/' . $id)->withErrors(['break_end' => '休憩時間が勤務時間外です']);
+                    }
+                    if (strtotime($request->break_end[$index]) <= strtotime($request->work_start)) {
+                        return redirect('/admin/attendance/' . $id)->withErrors(['break_end' => '休憩時間が勤務時間外です']);
+                    }
+                    $breaking->start_time = $request->break_start[$index];
+                    $breaking->end_time = $request->break_end[$index];
+                    $breaking->save();
+
+                    $work->date = $applyDate;
+                    $work->start_time = $request->work_start;
+                    $work->end_time = $request->work_end;
+                    $work->remarks = $request->remarks;
+                    $work->save();
+                }
+            }
+            return redirect('/admin/attendance/list/' . $date);
         }
-        return redirect('/admin/attendance/list/' . $date);
     }
 
     public function usersList()
@@ -706,20 +746,6 @@ class UserController extends Controller
         if (!$user) {
             return redirect()->route('login')->withErrors(['login' => 'ユーザーが認証されていません。']);
         }
-        $workData = Work::where('id', $id)->first();
-        $year = trim(str_replace('年', '', $request->year));
-        $date = trim(str_replace('月', '-', str_replace('日', '', $request->date)));
-        $applyDate = date('Y-m-d', strtotime($year . '-' . $date));
-
-        $workingApplication = new WorkingApplication();
-        $workingApplication->user_id = $user->id;
-        $workingApplication->work_id = $id;
-        $workingApplication->date = $applyDate;
-        $workingApplication->start_time = $request->work_start;
-        $workingApplication->end_time = $request->work_end;
-        $workingApplication->remarks = $request->remarks;
-        $workingApplication->status = '承認待ち';
-        $workingApplication->save();
 
         $breakings = [];
         $breakStarts = is_array($request->break_start) ? $request->break_start : [$request->break_start];
@@ -740,6 +766,27 @@ class UserController extends Controller
                 if (strtotime($end) <= strtotime($request->work_start)) {
                     return redirect('/attendance/' . $id)->withErrors(['break_end' => '休憩時間が勤務時間外です']);
                 }
+            }
+        }
+
+        $workData = Work::where('id', $id)->first();
+        $year = trim(str_replace('年', '', $request->year));
+        $date = trim(str_replace('月', '-', str_replace('日', '', $request->date)));
+        $applyDate = date('Y-m-d', strtotime($year . '-' . $date));
+
+        $workingApplication = new WorkingApplication();
+        $workingApplication->user_id = $user->id;
+        $workingApplication->work_id = $id;
+        $workingApplication->date = $applyDate;
+        $workingApplication->start_time = $request->work_start;
+        $workingApplication->end_time = $request->work_end;
+        $workingApplication->remarks = $request->remarks;
+        $workingApplication->status = '承認待ち';
+        $workingApplication->save();
+
+        foreach ($breakStarts as $index => $start) {
+            $end = $breakEnds[$index];
+            if ($start && $end) {
                 $breakingApplication = new BreakingApplication();
                 $breakingApplication->user_id = $user->id;
                 $breakingApplication->work_id = $id;

@@ -80,7 +80,7 @@ Route::get('/admin/staff/list', [UserController::class, 'usersList']);
 
 Route::get('/admin/attendance/{id}', [UserController::class, 'adminWorkDetail'])->where('id', '[0-9]+');
 
-Route::put('/admin/attendance/{id}', [UserController::class, 'fix'])->where('id', '[0-9]+');
+Route::post('/admin/attendance/{id}', [UserController::class, 'fix'])->where('id', '[0-9]+');
 
 Route::get('/admin/attendance/staff/{id}', [UserController::class, 'individualWorks'])->where('id', '[0-9]+');
 

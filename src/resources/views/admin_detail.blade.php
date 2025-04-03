@@ -21,7 +21,7 @@
             @endif
             <form class="information" action="/admin/attendance/{{ $work->id }}" method="post">
                 @csrf
-                @method('PUT')
+                <!-- @method('PUT') -->
                 <div class="information_row-first">
                     <div class="row_ttl">
                         <p class="row_ttl-content">名前</p>
@@ -58,24 +58,39 @@
                         </div>
                     </div>
                 </div>
-                @foreach ($breakings as $index => $breaking)
+                @if ($breakings->isEmpty())
                     <div class="information_row">
                         <div class="row_ttl">
                             <p class="row_ttl-content">休憩</p>
                         </div>
                         <div class="row_content">
                             <div class="row_content-inner">
-                                <input type="time" class="row_content-input"
-                                    value="{{ date('H:i', strtotime($breaking->start_time)) }}"
-                                    name="break_start[{{ $index }}]">
+                                <input type="time" class="row_content-input" name="break_start">
                                 <p class="row_content-character">〜</p>
-                                <input type="time" class="row_content-input"
-                                    value="{{ $breaking->end_time ? date('H:i', strtotime($breaking->end_time)) : '' }}"
-                                    name="break_end[{{ $index }}]">
+                                <input type="time" class="row_content-input" name="break_end">
                             </div>
                         </div>
                     </div>
-                @endforeach
+                @else
+                    @foreach ($breakings as $index => $breaking)
+                        <div class="information_row">
+                            <div class="row_ttl">
+                                <p class="row_ttl-content">休憩</p>
+                            </div>
+                            <div class="row_content">
+                                <div class="row_content-inner">
+                                    <input type="time" class="row_content-input"
+                                        value="{{ date('H:i', strtotime($breaking->start_time)) }}"
+                                        name="break_start[{{ $index }}]">
+                                    <p class="row_content-character">〜</p>
+                                    <input type="time" class="row_content-input"
+                                        value="{{ $breaking->end_time ? date('H:i', strtotime($breaking->end_time)) : '' }}"
+                                        name="break_end[{{ $index }}]">
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                @endif
                 <div class="information_row-last">
                     <div class="row_ttl">
                         <p class="row_ttl-content">備考</p>

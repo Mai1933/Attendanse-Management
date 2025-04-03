@@ -1275,4 +1275,714 @@ class AllControllerTest extends TestCase
         $response->assertSee('13:00');
         $response->assertSee('テスト');
     }
+
+    //[勤怠一覧情報取得機能（管理者）]
+    //その日になされた全ユーザーの勤怠情報が正確に確認できる
+    public function testAllAdminAttendanceInformation()
+    {
+        $user1 = User::create([
+            'name' => 'test1',
+            'email' => 'test1@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+        ]);
+        $user2 = User::create([
+            'name' => 'test2',
+            'email' => 'test2@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+        ]);
+
+        $work1 = Work::create([
+            'user_id' => $user1->id,
+            'date' => '2025-04-01',
+            'start_time' => now(),
+            'end_time' => now()->addHours(8),
+        ]);
+        $break1 = Breaking::create([
+            'user_id' => $user1->id,
+            'work_id' => $work1->id,
+            'start_time' => now()->addHours(1),
+            'end_time' => now()->addHours(2),
+        ]);
+        $work2 = Work::create([
+            'user_id' => $user2->id,
+            'date' => '2025-04-01',
+            'start_time' => now(),
+            'end_time' => now()->addHours(8),
+        ]);
+        $break2 = Breaking::create([
+            'user_id' => $user2->id,
+            'work_id' => $work2->id,
+            'start_time' => now()->addHours(1),
+            'end_time' => now()->addHours(5),
+        ]);
+
+        $adminUser = User::create([
+            'name' => 'admin',
+            'email' => 'admin@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+            'role' => 'admin'
+        ]);
+        $this->actingAs($adminUser);
+
+        $response = $this->get('/admin/attendance/list/2025-04-01');
+        $response->assertStatus(200);
+        $response->assertSee('2025/04/01');
+
+        $expectedStartTime1 = date('H:i', strtotime($work1->start_time));
+        $expectedEndTime1 = date('H:i', strtotime($work1->end_time));
+        $expectedBreakTime1 = '1:00';
+        $expectedWorkTime1 = '7:00';
+
+        $response->assertSee('test1');
+        $response->assertSee($expectedStartTime1);
+        $response->assertSee($expectedEndTime1);
+        $response->assertSee($expectedBreakTime1);
+        $response->assertSee($expectedWorkTime1);
+
+        $expectedStartTime2 = date('H:i', strtotime($work2->start_time));
+        $expectedEndTime2 = date('H:i', strtotime($work2->end_time));
+        $expectedBreakTime2 = '4:00';
+        $expectedWorkTime2 = '4:00';
+
+        $response->assertSee('test2');
+        $response->assertSee($expectedStartTime2);
+        $response->assertSee($expectedEndTime2);
+        $response->assertSee($expectedBreakTime2);
+        $response->assertSee($expectedWorkTime2);
+    }
+    //遷移した際に現在の日付が表示される
+    public function testAdminTodayDisplayed()
+    {
+        $adminUser = User::create([
+            'name' => 'admin',
+            'email' => 'admin@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+            'role' => 'admin'
+        ]);
+        $this->actingAs($adminUser);
+
+        $response = $this->get('/admin/attendance/list');
+        $response->assertSee(date('Y/m/d', strtotime(today())));
+    }
+    //「前日」を押下した時に前の日の勤怠情報が表示される
+    public function testAdminPreviousDayAttendanceInformation()
+    {
+        $user1 = User::create([
+            'name' => 'test1',
+            'email' => 'test1@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+        ]);
+        $user2 = User::create([
+            'name' => 'test2',
+            'email' => 'test2@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+        ]);
+
+        $work1 = Work::create([
+            'user_id' => $user1->id,
+            'date' => '2025-04-01',
+            'start_time' => now(),
+            'end_time' => now()->addHours(8),
+        ]);
+        $break1 = Breaking::create([
+            'user_id' => $user1->id,
+            'work_id' => $work1->id,
+            'start_time' => now()->addHours(1),
+            'end_time' => now()->addHours(2),
+        ]);
+        $work2 = Work::create([
+            'user_id' => $user2->id,
+            'date' => '2025-04-02',
+            'start_time' => now(),
+            'end_time' => now()->addHours(8),
+        ]);
+        $break2 = Breaking::create([
+            'user_id' => $user2->id,
+            'work_id' => $work2->id,
+            'start_time' => now()->addHours(1),
+            'end_time' => now()->addHours(5),
+        ]);
+
+        $adminUser = User::create([
+            'name' => 'admin',
+            'email' => 'admin@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+            'role' => 'admin'
+        ]);
+        $this->actingAs($adminUser);
+
+        $response = $this->get('/admin/attendance/list/2025-04-01');
+        $response->assertStatus(200);
+
+        $response->assertSee('2025/04/01');
+        $expectedStartTime1 = date('H:i', strtotime($work1->start_time));
+        $expectedEndTime1 = date('H:i', strtotime($work1->end_time));
+        $expectedBreakTime1 = '1:00';
+        $expectedWorkTime1 = '7:00';
+
+        $response->assertSee('test1');
+        $response->assertSee($expectedStartTime1);
+        $response->assertSee($expectedEndTime1);
+        $response->assertSee($expectedBreakTime1);
+        $response->assertSee($expectedWorkTime1);
+    }
+    //「翌日」を押下した時に次の日の勤怠情報が表示される
+    public function testAdminNextDayAttendanceInformation()
+    {
+        $user1 = User::create([
+            'name' => 'test1',
+            'email' => 'test1@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+        ]);
+        $user2 = User::create([
+            'name' => 'test2',
+            'email' => 'test2@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+        ]);
+
+        $work1 = Work::create([
+            'user_id' => $user1->id,
+            'date' => '2025-04-01',
+            'start_time' => now(),
+            'end_time' => now()->addHours(8),
+        ]);
+        $break1 = Breaking::create([
+            'user_id' => $user1->id,
+            'work_id' => $work1->id,
+            'start_time' => now()->addHours(1),
+            'end_time' => now()->addHours(2),
+        ]);
+        $work2 = Work::create([
+            'user_id' => $user2->id,
+            'date' => '2025-04-02',
+            'start_time' => now(),
+            'end_time' => now()->addHours(8),
+        ]);
+        $break2 = Breaking::create([
+            'user_id' => $user2->id,
+            'work_id' => $work2->id,
+            'start_time' => now()->addHours(1),
+            'end_time' => now()->addHours(5),
+        ]);
+
+        $adminUser = User::create([
+            'name' => 'admin',
+            'email' => 'admin@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+            'role' => 'admin'
+        ]);
+        $this->actingAs($adminUser);
+
+        $response = $this->get('/admin/attendance/list/2025-04-02');
+        $response->assertStatus(200);
+
+        $response->assertSee('2025/04/02');
+        $expectedStartTime2 = date('H:i', strtotime($work2->start_time));
+        $expectedEndTime2 = date('H:i', strtotime($work2->end_time));
+        $expectedBreakTime2 = '4:00';
+        $expectedWorkTime2 = '4:00';
+
+        $response->assertSee('test2');
+        $response->assertSee($expectedStartTime2);
+        $response->assertSee($expectedEndTime2);
+        $response->assertSee($expectedBreakTime2);
+        $response->assertSee($expectedWorkTime2);
+    }
+
+    //[勤怠詳細情報取得・修正機能（管理者）]
+    //勤怠詳細画面に表示されるデータが選択したものになっている
+    public function testAdminAttendanceDetailsInformation()
+    {
+        $user = User::create([
+            'name' => 'test',
+            'email' => 'test@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+        ]);
+
+        $work = Work::create([
+            'user_id' => $user->id,
+            'date' => '2025-04-01',
+            'start_time' => now(),
+            'end_time' => now()->addHours(8),
+        ]);
+        $break = Breaking::create([
+            'user_id' => $user->id,
+            'work_id' => $work->id,
+            'start_time' => now()->addHours(1),
+            'end_time' => now()->addHours(2),
+        ]);
+
+        $adminUser = User::create([
+            'name' => 'admin',
+            'email' => 'admin@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+            'role' => 'admin'
+        ]);
+        $this->actingAs($adminUser);
+
+        $expectedWorkStartTime = date('H:i', strtotime($work->start_time));
+        $expectedWorkEndTime = date('H:i', strtotime($work->end_time));
+        $expectedBreakStartTime = date('H:i', strtotime($break->start_time));
+        $expectedBreakEndTime = date('H:i', strtotime($break->end_time));
+
+        $response = $this->get('/admin/attendance/' . $work->id);
+        $response->assertStatus(200);
+        $response->assertSee('test');
+        $response->assertSee('2025年');
+        $response->assertSee('4月1日');
+        $response->assertSee($expectedWorkStartTime);
+        $response->assertSee($expectedWorkEndTime);
+        $response->assertSee($expectedBreakStartTime);
+        $response->assertSee($expectedBreakEndTime);
+    }
+    //出勤時間が退勤時間より後になっている場合、エラーメッセージが表示される
+    //備考欄が未入力の場合のエラーメッセージが表示される
+    #[\PHPUnit\Framework\Attributes\DataProvider('FixDataproviderValidation')]
+    public function testFixValidationCheck(array $params, array $messages, bool $expect): void
+    {
+        $request = new ApplyRequest();
+        $rules = $request->rules();
+        $validator = Validator::make($params, $rules);
+        $validator = $validator->setCustomMessages($request->messages());
+        $result = $validator->passes();
+        $this->assertEquals($expect, $result);
+        $this->assertSame($messages, $validator->errors()->messages());
+    }
+    /**
+     * バリデーションチェック用データ
+     */
+    public static function FixDataproviderValidation()
+    {
+        $now = now()->setDate(2025, 4, 1)->setTime(9, 0, 0);
+        return [
+            'work start after work end' => [
+                [
+                    'year' => '2025年',
+                    'date' => '4月1日',
+                    'work_start' => $now->copy()->addHours(8),
+                    'work_end' => $now->copy()->addHours(7),
+                    'remarks' => 'test'
+                ],
+                [
+                    'work_end' => [
+                        '出勤時刻もしくは退勤時刻が不適切な値です',
+                    ],
+                ],
+                false
+            ],
+            'remarks null' => [
+                [
+                    'year' => '2025年',
+                    'date' => '4月1日',
+                    'work_start' => $now,
+                    'work_end' => $now->copy()->addHours(8),
+                    'remarks' => null
+                ],
+                [
+                    'remarks' => [
+                        '備考を記入してください',
+                    ],
+                ],
+                false
+            ],
+        ];
+    }
+    //休憩開始時間が退勤時間より後になっている場合、エラーメッセージが表示される
+    //休憩終了時間が退勤時間より後になっている場合、エラーメッセージが表示される
+    public function testFixBreakStartValidationCheck()
+    {
+        $user = User::create([
+            'name' => 'test',
+            'email' => 'test@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+        ]);
+        $this->actingAs($user);
+
+        $work = Work::create([
+            'user_id' => $user->id,
+            'date' => '2025-04-01',
+            'start_time' => '09:00:00',
+            'end_time' => '17:00:00',
+        ]);
+
+        $adminUser = User::create([
+            'name' => 'admin',
+            'email' => 'admin@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+            'role' => 'admin'
+        ]);
+        $this->actingAs($adminUser);
+
+        $data = [
+            'year' => '2025年',
+            'date' => '4月2日',
+            'work_start' => '11:00',
+            'work_end' => '19:00',
+            'break_start' => '20:00',
+            'break_end' => '21:00',
+            'remarks' => 'テスト'
+        ];
+        $response = $this->post('/admin/attendance/' . $work->id, $data);
+        $response->assertRedirect('/admin/attendance/' . $work->id);
+        $response->assertSessionHasErrors(['break_start' => '休憩時間が勤務時間外です']);
+    }
+
+    //[ユーザー情報取得機能（管理者）]
+    //管理者ユーザーが全一般ユーザーの「氏名」「メールアドレス」を確認できる
+    public function testAllUsersInformation()
+    {
+        $user1 = User::create([
+            'name' => 'test1',
+            'email' => 'test1@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+        ]);
+        $user2 = User::create([
+            'name' => 'test2',
+            'email' => 'test2@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+        ]);
+        $user3 = User::create([
+            'name' => 'test3',
+            'email' => 'test3@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+        ]);
+
+        $adminUser = User::create([
+            'name' => 'admin',
+            'email' => 'admin@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+            'role' => 'admin'
+        ]);
+        $this->actingAs($adminUser);
+
+        $response = $this->get('/admin/staff/list');
+        $response->assertStatus(200);
+
+        $response->assertSee('test1');
+        $response->assertSee('test1@example.com');
+        $response->assertSee('test2');
+        $response->assertSee('test2@example.com');
+        $response->assertSee('test3');
+        $response->assertSee('test3@example.com');
+    }
+    //ユーザーの勤怠情報が正しく表示される
+    public function testUsersAttendanceInformation()
+    {
+        $user = User::create([
+            'name' => 'test',
+            'email' => 'test@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+        ]);
+        $work1 = Work::create([
+            'user_id' => $user->id,
+            'date' => '2025-04-01',
+            'start_time' => now(),
+            'end_time' => now()->addHours(8),
+        ]);
+        $break1 = Breaking::create([
+            'user_id' => $user->id,
+            'work_id' => $work1->id,
+            'start_time' => now()->addHours(1),
+            'end_time' => now()->addHours(2),
+        ]);
+        $work2 = Work::create([
+            'user_id' => $user->id,
+            'date' => '2025-04-02',
+            'start_time' => now(),
+            'end_time' => now()->addHours(8),
+        ]);
+        $break2 = Breaking::create([
+            'user_id' => $user->id,
+            'work_id' => $work2->id,
+            'start_time' => now()->addHours(1),
+            'end_time' => now()->addHours(5),
+        ]);
+
+        $adminUser = User::create([
+            'name' => 'admin',
+            'email' => 'admin@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+            'role' => 'admin'
+        ]);
+        $this->actingAs($adminUser);
+
+        $response = $this->get('/admin/attendance/staff/' . $user->id . '/2025-04-01');
+        $response->assertStatus(200);
+
+        $response->assertSee('2025/04');
+        $expectedStartTime1 = date('H:i', strtotime($work1->start_time));
+        $expectedEndTime1 = date('H:i', strtotime($work1->end_time));
+        $expectedBreakTime1 = '1:00';
+        $expectedWorkTime1 = '7:00';
+
+        $response->assertSee('04/01(火)');
+        $response->assertSee($expectedStartTime1);
+        $response->assertSee($expectedEndTime1);
+        $response->assertSee($expectedBreakTime1);
+        $response->assertSee($expectedWorkTime1);
+
+        $expectedStartTime2 = date('H:i', strtotime($work2->start_time));
+        $expectedEndTime2 = date('H:i', strtotime($work2->end_time));
+        $expectedBreakTime2 = '4:00';
+        $expectedWorkTime2 = '4:00';
+
+        $response->assertSee('04/02(水)');
+        $response->assertSee($expectedStartTime2);
+        $response->assertSee($expectedEndTime2);
+        $response->assertSee($expectedBreakTime2);
+        $response->assertSee($expectedWorkTime2);
+    }
+    //「前月」を押下した時に表示月の前月の情報が表示される
+    public function testUsersPreviousMonthAttendanceInformation()
+    {
+        $user = User::create([
+            'name' => 'test',
+            'email' => 'test@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+        ]);
+        $work1 = Work::create([
+            'user_id' => $user->id,
+            'date' => '2025-04-01',
+            'start_time' => now(),
+            'end_time' => now()->addHours(8),
+        ]);
+        $break1 = Breaking::create([
+            'user_id' => $user->id,
+            'work_id' => $work1->id,
+            'start_time' => now()->addHours(1),
+            'end_time' => now()->addHours(2),
+        ]);
+        $work2 = Work::create([
+            'user_id' => $user->id,
+            'date' => '2025-04-02',
+            'start_time' => now(),
+            'end_time' => now()->addHours(8),
+        ]);
+        $break2 = Breaking::create([
+            'user_id' => $user->id,
+            'work_id' => $work2->id,
+            'start_time' => now()->addHours(1),
+            'end_time' => now()->addHours(5),
+        ]);
+        $work3 = Work::create([
+            'user_id' => $user->id,
+            'date' => '2025-05-01',
+            'start_time' => now(),
+            'end_time' => now()->addHours(8),
+        ]);
+        $break3 = Breaking::create([
+            'user_id' => $user->id,
+            'work_id' => $work3->id,
+            'start_time' => now()->addHours(1),
+            'end_time' => now()->addHours(2),
+        ]);
+        $work4 = Work::create([
+            'user_id' => $user->id,
+            'date' => '2025-05-02',
+            'start_time' => now(),
+            'end_time' => now()->addHours(8),
+        ]);
+        $break4 = Breaking::create([
+            'user_id' => $user->id,
+            'work_id' => $work4->id,
+            'start_time' => now()->addHours(1),
+            'end_time' => now()->addHours(5),
+        ]);
+
+        $adminUser = User::create([
+            'name' => 'admin',
+            'email' => 'admin@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+            'role' => 'admin'
+        ]);
+        $this->actingAs($adminUser);
+
+        $response = $this->get('/admin/attendance/staff/' . $user->id . '/2025-04-01');
+        $response->assertStatus(200);
+
+        $response->assertSee('2025/04');
+        $expectedStartTime1 = date('H:i', strtotime($work1->start_time));
+        $expectedEndTime1 = date('H:i', strtotime($work1->end_time));
+        $expectedBreakTime1 = '1:00';
+        $expectedWorkTime1 = '7:00';
+
+        $response->assertSee('04/01(火)');
+        $response->assertSee($expectedStartTime1);
+        $response->assertSee($expectedEndTime1);
+        $response->assertSee($expectedBreakTime1);
+        $response->assertSee($expectedWorkTime1);
+
+        $expectedStartTime2 = date('H:i', strtotime($work2->start_time));
+        $expectedEndTime2 = date('H:i', strtotime($work2->end_time));
+        $expectedBreakTime2 = '4:00';
+        $expectedWorkTime2 = '4:00';
+
+        $response->assertSee('04/02(水)');
+        $response->assertSee($expectedStartTime2);
+        $response->assertSee($expectedEndTime2);
+        $response->assertSee($expectedBreakTime2);
+        $response->assertSee($expectedWorkTime2);
+    }
+    //「翌月」を押下した時に表示月の翌月の情報が表示される
+    public function testUsersNextMonthAttendanceInformation()
+    {
+        $user = User::create([
+            'name' => 'test',
+            'email' => 'test@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+        ]);
+        $work1 = Work::create([
+            'user_id' => $user->id,
+            'date' => '2025-04-01',
+            'start_time' => now(),
+            'end_time' => now()->addHours(8),
+        ]);
+        $break1 = Breaking::create([
+            'user_id' => $user->id,
+            'work_id' => $work1->id,
+            'start_time' => now()->addHours(1),
+            'end_time' => now()->addHours(2),
+        ]);
+        $work2 = Work::create([
+            'user_id' => $user->id,
+            'date' => '2025-04-02',
+            'start_time' => now(),
+            'end_time' => now()->addHours(8),
+        ]);
+        $break2 = Breaking::create([
+            'user_id' => $user->id,
+            'work_id' => $work2->id,
+            'start_time' => now()->addHours(1),
+            'end_time' => now()->addHours(5),
+        ]);
+        $work3 = Work::create([
+            'user_id' => $user->id,
+            'date' => '2025-05-01',
+            'start_time' => now(),
+            'end_time' => now()->addHours(8),
+        ]);
+        $break3 = Breaking::create([
+            'user_id' => $user->id,
+            'work_id' => $work3->id,
+            'start_time' => now()->addHours(1),
+            'end_time' => now()->addHours(2),
+        ]);
+        $work4 = Work::create([
+            'user_id' => $user->id,
+            'date' => '2025-05-02',
+            'start_time' => now(),
+            'end_time' => now()->addHours(8),
+        ]);
+        $break4 = Breaking::create([
+            'user_id' => $user->id,
+            'work_id' => $work4->id,
+            'start_time' => now()->addHours(1),
+            'end_time' => now()->addHours(5),
+        ]);
+
+        $adminUser = User::create([
+            'name' => 'admin',
+            'email' => 'admin@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+            'role' => 'admin'
+        ]);
+        $this->actingAs($adminUser);
+
+        $response = $this->get('/admin/attendance/staff/' . $user->id . '/2025-05-01');
+        $response->assertStatus(200);
+
+        $response->assertSee('2025/05');
+        $expectedStartTime3 = date('H:i', strtotime($work3->start_time));
+        $expectedEndTime3 = date('H:i', strtotime($work3->end_time));
+        $expectedBreakTime3 = '1:00';
+        $expectedWorkTime3 = '7:00';
+
+        $response->assertSee('05/01(木)');
+        $response->assertSee($expectedStartTime3);
+        $response->assertSee($expectedEndTime3);
+        $response->assertSee($expectedBreakTime3);
+        $response->assertSee($expectedWorkTime3);
+
+        $expectedStartTime4 = date('H:i', strtotime($work4->start_time));
+        $expectedEndTime4 = date('H:i', strtotime($work4->end_time));
+        $expectedBreakTime4 = '4:00';
+        $expectedWorkTime4 = '4:00';
+
+        $response->assertSee('05/02(金)');
+        $response->assertSee($expectedStartTime4);
+        $response->assertSee($expectedEndTime4);
+        $response->assertSee($expectedBreakTime4);
+        $response->assertSee($expectedWorkTime4);
+    }
+    //「詳細」を押下すると、その日の勤怠詳細画面に遷移する
+    public function testUsersAttendanceInformationDetail()
+    {
+        $user = User::create([
+            'name' => 'test',
+            'email' => 'test@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+        ]);
+        $work = Work::create([
+            'user_id' => $user->id,
+            'date' => '2025-04-01',
+            'start_time' => now(),
+            'end_time' => now()->addHours(8),
+        ]);
+        $break = Breaking::create([
+            'user_id' => $user->id,
+            'work_id' => $work->id,
+            'start_time' => now()->addHours(1),
+            'end_time' => now()->addHours(2),
+        ]);
+
+        $adminUser = User::create([
+            'name' => 'admin',
+            'email' => 'admin@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+            'role' => 'admin'
+        ]);
+        $this->actingAs($adminUser);
+
+        $response = $this->get('/admin/attendance/' . $user->id);
+        $response->assertStatus(200);
+
+        $expectedWorkStartTime = date('H:i', strtotime($work->start_time));
+        $expectedWorkEndTime = date('H:i', strtotime($work->end_time));
+        $expectedBreakStartTime = date('H:i', strtotime($break->start_time));
+        $expectedBreakEndTime = date('H:i', strtotime($break->end_time));
+
+        $response->assertSee('test');
+        $response->assertSee('2025年');
+        $response->assertSee('4月1日');
+        $response->assertSee($expectedWorkStartTime);
+        $response->assertSee($expectedWorkEndTime);
+        $response->assertSee($expectedBreakStartTime);
+        $response->assertSee($expectedBreakEndTime);
+    }
 }
