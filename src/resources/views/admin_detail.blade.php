@@ -21,7 +21,6 @@
             @endif
             <form class="information" action="/admin/attendance/{{ $work->id }}" method="post">
                 @csrf
-                <!-- @method('PUT') -->
                 <div class="information_row-first">
                     <div class="row_ttl">
                         <p class="row_ttl-content">名前</p>

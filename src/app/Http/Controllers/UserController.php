@@ -5,46 +5,31 @@ namespace App\Http\Controllers;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\ApplyRequest;
+use App\Responses\RegisterResponse;
+use App\Models\User;
+use App\Models\Work;
+use App\Models\Breaking;
+use App\Models\BreakingApplication;
+use App\Models\WorkingApplication;
 use DateTime;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Hash;
-use Laravel\Fortify\Contracts\CreatesNewUsers;
-use Laravel\Fortify\Contracts\RegisterViewResponse;
-use Laravel\Fortify\Fortify;
-use App\Actions\Fortify\CreateNewUser;
-use App\Models\User;
-use App\Models\Work;
-use App\Models\Breaking;
-use App\Models\BreakingApplication;
-use App\Models\WorkingApplication;
-use Illuminate\Support\Facades\Log;
-use App\Http\Requests\ExhibitionRequest;
-use App\Models\Comment;
-use Illuminate\Support\Facades\Auth;
-use App\Models\Item;
-use App\Models\Category;
-use App\Models\Purchase;
-use App\Http\Requests\AddressRequest;
-use App\Http\Requests\ProfileRequest;
-use Laravel\Fortify\Contracts\LoginResponse;
-use App\Responses\AdminLoginResponse;
 use Illuminate\Routing\Pipeline;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Fortify\Actions\AttemptToAuthenticate;
 use Laravel\Fortify\Actions\CanonicalizeUsername;
 use Laravel\Fortify\Actions\EnsureLoginIsNotThrottled;
 use Laravel\Fortify\Actions\PrepareAuthenticatedSession;
 use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
+use Laravel\Fortify\Contracts\CreatesNewUsers;
+use Laravel\Fortify\Contracts\LoginResponse;
 use Laravel\Fortify\Features;
-use App\Responses\RegisterResponse;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
-
-
+use Laravel\Fortify\Fortify;
 
 class UserController extends Controller
 {
@@ -150,7 +135,6 @@ class UserController extends Controller
         $totalBreakTimes = [];
         $formattedBreakTimes = [];
         $formattedWorkTimes = [];
-
 
         foreach ($todaysWorks as $todaysWork) {
             $user[$todaysWork->id] = User::where('id', $todaysWork->user_id)->first();
@@ -534,7 +518,6 @@ class UserController extends Controller
         );
     }
 
-    //一般ユーザー
     public function generalLogin()
     {
         return view('general_login');
@@ -682,7 +665,6 @@ class UserController extends Controller
 
         $workData = Work::where('user_id', $user->id)->get();
         $monthString = $year . '-' . $monthData;
-        // $todayMonth = date('Y-m');
         $works = $workData->filter(function ($item) use ($monthString) {
             return strpos($item->date, $monthString) === 0;
         })->sortBy('date')->values();

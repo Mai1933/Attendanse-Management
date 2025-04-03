@@ -28,32 +28,6 @@ class ApplyRequest extends FormRequest
             'work_end' => 'required|after:work_start',
             'break_start.*' => 'nullable',
             'break_end.*' => 'nullable',
-            // 'break_start.*' => [
-            //     'nullable',
-            //     'after:work_start',
-            //     'before:work_end',
-            //     function ($attribute, $value, $fail) {
-            //         if (isset($this->work_end) && strtotime($value) >= strtotime($this->work_end)) {
-            //             $fail('休憩時間が勤務時間外です');
-            //         }
-            //         if (isset($this->work_start) && strtotime($value) <= strtotime($this->work_start)) {
-            //             $fail('休憩時間が勤務時間外です');
-            //         }
-            //     },
-            // ],
-            // 'break_end.*' => [
-            //     'nullable',
-            //     'after:break_start.*',
-            //     'before:work_end',
-            //     function ($attribute, $value, $fail) {
-            //         if (isset($this->work_end) && strtotime($value) >= strtotime($this->work_end)) {
-            //             $fail('休憩時間が勤務時間外です');
-            //         }
-            //         if (isset($this->work_start) && strtotime($value) <= strtotime($this->work_start)) {
-            //             $fail('休憩時間が勤務時間外です');
-            //         }
-            //     },
-            // ],
             'remarks' => 'required',
         ];
     }

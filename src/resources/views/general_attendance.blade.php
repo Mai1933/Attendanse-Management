@@ -56,7 +56,7 @@
                         @endforeach
                     @else
                         <tr>
-                            <td colspan="6" class="table_content-time text-center">該当する勤怠データはありません。</td> <!-- メッセージを表示 -->
+                            <td colspan="6" class="table_content-time text-center">該当する勤怠データはありません。</td>
                         </tr>
                     @endif
                 </table>

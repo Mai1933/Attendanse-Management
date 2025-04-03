@@ -4,9 +4,9 @@ namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
-use Tests\TestCase;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\Log;
 use App\Http\Requests\ApplyRequest;
 use App\Http\Requests\EmailVerificationRequest;
 use App\Http\Requests\LoginRequest;
@@ -16,7 +16,7 @@ use App\Models\Work;
 use App\Models\Breaking;
 use App\Models\WorkingApplication;
 use App\Models\BreakingApplication;
-use Illuminate\Support\Facades\Log;
+use Tests\TestCase;
 
 class AllControllerTest extends TestCase
 {

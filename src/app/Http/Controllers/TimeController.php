@@ -2,45 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Work;
 use App\Models\Breaking;
-use App\Http\Requests\RegisterRequest;
-use App\Http\Requests\LoginRequest;
-use Illuminate\Auth\Events\Registered;
-use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Hash;
-use Laravel\Fortify\Contracts\CreatesNewUsers;
-use Laravel\Fortify\Contracts\RegisterViewResponse;
-use Laravel\Fortify\Fortify;
-use App\Actions\Fortify\CreateNewUser;
-use App\Models\User;
-use App\Models\AdminUser;
 use Illuminate\Support\Facades\Log;
-use App\Http\Requests\ExhibitionRequest;
-use App\Models\Comment;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Item;
-use App\Models\Category;
-
-use App\Models\Purchase;
-use App\Http\Requests\AddressRequest;
-use App\Http\Requests\ProfileRequest;
-use Laravel\Fortify\Contracts\LoginResponse;
-use App\Responses\AdminLoginResponse;
-use Illuminate\Routing\Pipeline;
-use Laravel\Fortify\Actions\AttemptToAuthenticate;
-use Laravel\Fortify\Actions\CanonicalizeUsername;
-use Laravel\Fortify\Actions\EnsureLoginIsNotThrottled;
-use Laravel\Fortify\Actions\PrepareAuthenticatedSession;
-use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
-use Laravel\Fortify\Features;
-use App\Responses\RegisterResponse;
-use ReturnTypeWillChange;
-
-
 
 class TimeController extends Controller
 {
@@ -173,7 +139,6 @@ class TimeController extends Controller
         if ($work->isEmpty()) {
             Log::info('仕事の開始時間が登録されていません');
         }
-
 
         $breaking = new Breaking();
 
