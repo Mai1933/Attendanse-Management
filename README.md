@@ -16,20 +16,30 @@
    (1)DB_PORT から DB_PASSWORD までのコメントアウトを解除  
    (2)以下を該当箇所へコピペ
 
-   ```
-   APP_LOCALE=ja
-   APP_FALLBACK_LOCALE=ja
-   APP_FAKER_LOCALE=ja_JP
+```
+APP_TIMEZONE=Asia/Tokyo
+APP_URL=http://localhost
 
-   MAIL_MAILER=smtp
-   MAIL_HOST=mailhog
-   MAIL_PORT=1025
-   MAIL_USERNAME=test
-   MAIL_PASSWORD=pass
-   MAIL_ENCRYPTION=smtp
-   MAIL_FROM_ADDRESS="test@test"
-   MAIL_FROM_NAME="${APP_NAME}"
-   ```
+APP_LOCALE=ja
+APP_FALLBACK_LOCALE=ja
+APP_FAKER_LOCALE=ja_JP
+
+DB_CONNECTION=mysql
+DB_HOST=mysql
+DB_PORT=3306
+DB_DATABASE=laravel_db
+DB_USERNAME=laravel_user
+DB_PASSWORD=laravel_pass
+
+MAIL_MAILER=smtp
+MAIL_HOST=mailhog
+MAIL_PORT=1025
+MAIL_USERNAME=test
+MAIL_PASSWORD=pass
+MAIL_ENCRYPTION=smtp
+MAIL_FROM_ADDRESS="test@test"
+MAIL_FROM_NAME="${APP_NAME}"
+```
 
 4. `php artisan key:generate`
 5. `php artisan migrate`
@@ -114,20 +124,18 @@ VITE_APP_NAME="${APP_NAME}"
 4.  phpunit.xml の該当箇所に以下をコピペ
 
 ```
-    <php>
-     <env name="APP_ENV" value="testing"/>
-     <env name="APP_MAINTENANCE_DRIVER" value="file"/>
-     <env name="BCRYPT_ROUNDS" value="4"/>
-     <env name="CACHE_STORE" value="array"/>
-     <env name="DB_CONNECTION" value="mysql_test"/>
-     <env name="DB_DATABASE" value="demo_test"/>
-     <env name="DB_USERNAME" value="ユーザー名"/>
-     <env name="DB_PASSWORD" value="パスワード"/>
-     <env name="MAIL_MAILER" value="array"/>
-     <env name="PULSE_ENABLED" value="false"/>
-     <env name="QUEUE_CONNECTION" value="sync"/>
-     <env name="SESSION_DRIVER" value="array"/>
-     <env name="TELESCOPE_ENABLED" value="false"/>
+ <php>
+        <env name="APP_ENV" value="testing"/>
+        <env name="APP_MAINTENANCE_DRIVER" value="file"/>
+        <env name="BCRYPT_ROUNDS" value="4"/>
+        <env name="CACHE_STORE" value="array"/>
+        <env name="DB_CONNECTION" value="mysql_test"/>
+        <env name="DB_DATABASE" value="demo_test"/>
+        <env name="MAIL_MAILER" value="array"/>
+        <env name="PULSE_ENABLED" value="false"/>
+        <env name="QUEUE_CONNECTION" value="sync"/>
+        <env name="SESSION_DRIVER" value="array"/>
+        <env name="TELESCOPE_ENABLED" value="false"/>
     </php>
 ```
 
@@ -175,6 +183,12 @@ VITE_APP_NAME="${APP_NAME}"
 - mailhog:http://localhost:8025/
 
 ## 注意
+
+- 登録しているユーザーに関して、  
+  一般ユーザー：名前とメールアドレスは画面設計の通り、パスワードは「password」  
+  管理者ユーザー：名前は admin,メールアドレスはadmin@email.com,パスワードは「password」としております。
+
+- 代表者として「西伶奈,reina.n@coachtech.com,password」により多くの勤怠及び申請情報を登録しております。各種テストの際にお役立てください。
 
 - 拡張機能で ChatGPT のサイドバーをオンにしている場合、画面下部のボタンが押せない事象が発生することがあります。一時的に拡張機能をアンインストールすると解消します。
 
