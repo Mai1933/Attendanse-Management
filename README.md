@@ -105,6 +105,7 @@ AWS_USE_PATH_STYLE_ENDPOINT=false
 VITE_APP_NAME="${APP_NAME}"
 
 4.  phpunit.xml の該当箇所に以下をコピペ  
+```xml
     <php>  
      <env name="APP_ENV" value="testing"/>  
      <env name="APP_MAINTENANCE_DRIVER" value="file"/>  
