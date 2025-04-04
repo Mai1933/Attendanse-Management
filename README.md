@@ -51,8 +51,6 @@ APP_FAKER_LOCALE=ja_JP
 
 APP_MAINTENANCE_DRIVER=file
 
-# APP_MAINTENANCE_STORE=database
-
 PHP_CLI_SERVER_WORKERS=4
 
 BCRYPT_ROUNDS=12
@@ -107,41 +105,41 @@ AWS_USE_PATH_STYLE_ENDPOINT=false
 VITE_APP_NAME="${APP_NAME}"
 
 4.  phpunit.xml の該当箇所に以下をコピペ  
-    <php>
-    <env name="APP_ENV" value="testing"/>
-    <env name="APP_MAINTENANCE_DRIVER" value="file"/>
-    <env name="BCRYPT_ROUNDS" value="4"/>
-    <env name="CACHE_STORE" value="array"/>
-    <env name="DB_CONNECTION" value="mysql_test"/>
-    <env name="DB_DATABASE" value="demo_test"/>
-    <env name="DB_USERNAME" value="ユーザー名"/>
-    <env name="DB_PASSWORD" value="パスワード"/>
-    <env name="MAIL_MAILER" value="array"/>
-    <env name="PULSE_ENABLED" value="false"/>
-    <env name="QUEUE_CONNECTION" value="sync"/>
-    <env name="SESSION_DRIVER" value="array"/>
-    <env name="TELESCOPE_ENABLED" value="false"/>
+    <php>  
+     <env name="APP_ENV" value="testing"/>  
+     <env name="APP_MAINTENANCE_DRIVER" value="file"/>  
+     <env name="BCRYPT_ROUNDS" value="4"/>  
+     <env name="CACHE_STORE" value="array"/>  
+     <env name="DB_CONNECTION" value="mysql_test"/>  
+     <env name="DB_DATABASE" value="demo_test"/>  
+     <env name="DB_USERNAME" value="ユーザー名"/>  
+     <env name="DB_PASSWORD" value="パスワード"/>  
+     <env name="MAIL_MAILER" value="array"/>  
+     <env name="PULSE_ENABLED" value="false"/>  
+     <env name="QUEUE_CONNECTION" value="sync"/>  
+     <env name="SESSION_DRIVER" value="array"/>  
+     <env name="TELESCOPE_ENABLED" value="false"/>  
     </php>
 5.  src/config/database.php に以下を追加  
-    'mysql_test' => [
-    'driver' => 'mysql',
-    'url' => env('DB_URL'),
-    'host' => env('DB_HOST', '127.0.0.1'),
-    'port' => env('DB_PORT', '3306'),
-    'database' => 'demo_test',
-    'username' => 'root',
-    'password' => 'root',
-    'unix_socket' => env('DB_SOCKET', ''),
-    'charset' => env('DB_CHARSET', 'utf8mb4'),
-    'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
-    'prefix' => '',
-    'prefix_indexes' => true,
-    'strict' => true,
-    'engine' => null,
-    'options' => extension_loaded('pdo_mysql') ? array_filter([
-    PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
-    ]) : [],
-    ],
+    'mysql_test' => [  
+      'driver' => 'mysql',  
+      'url' => env('DB_URL'),  
+      'host' => env('DB_HOST', '127.0.0.1'),  
+      'port' => env('DB_PORT', '3306'),  
+      'database' => 'demo_test',  
+      'username' => 'root',  
+      'password' => 'root',  
+      'unix_socket' => env('DB_SOCKET', ''),  
+      'charset' => env('DB_CHARSET', 'utf8mb4'),  
+      'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),  
+      'prefix' => '',  
+      'prefix_indexes' => true,  
+      'strict' => true,  
+      'engine' => null,  
+      'options' => extension_loaded('pdo_mysql') ? array_filter([
+    PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),  
+    ]) : [],  
+    ],  
 6.  php artisan key:generate --env=testing
 
 ## 使用技術
