@@ -178,7 +178,7 @@ VITE_APP_NAME="${APP_NAME}"
 
 ## URL
 
-- 開発環境：http://localhost/
+- 開発環境：http://localhost/login
 - phpMyAdmin:http://localhost:8080/
 - mailhog:http://localhost:8025/
 
